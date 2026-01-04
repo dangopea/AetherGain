@@ -30,6 +30,20 @@ struct MainTabView: View {
                 Text("Home")
             }
             
+            // Log Workout Tab
+            LogWorkoutView()
+                .tabItem {
+                    Image(systemName: "plus.circle.fill")
+                    Text("Log Workout")
+                }
+            
+            //Workout History Tab
+            WorkoutHistoryView()
+                .tabItem {
+                    Image(systemName: "clock.fill")
+                    Text("History")
+                }
+            
             // Profile Tab
             ProfileView()
                 .tabItem {
@@ -62,6 +76,7 @@ struct MainTabView: View {
         }
     }
 }
+
 
 
 #Preview {

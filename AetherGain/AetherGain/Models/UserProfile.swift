@@ -16,6 +16,7 @@ import FirebaseFirestore
 struct UserProfile: Identifiable, Codable {
     @DocumentID var id: String? = UUID().uuidString  // Firestore document ID
     
+    //Criterion 2
     var name: String = ""
     var age: Int = 18
     var goals: String = ""  //You can add anything like "Lose weight", "Build muscle"
@@ -23,6 +24,9 @@ struct UserProfile: Identifiable, Codable {
     var experienceLevel: String = "Beginner"  //Levels: Beginner, Intermediate, Advanced
     var heightCM: Double = 170.0
     var weightKG: Double = 70.0
+    
+    //Criterion 4
+    var xp: Int = 0
     
     init() {} // Default initializer (needed for previews and testing)
     
@@ -33,7 +37,8 @@ struct UserProfile: Identifiable, Codable {
          preferences: String = "",
          experienceLevel: String = "Beginner",
          heightCM: Double = 170.0,
-         weightKG: Double = 70.0) {
+         weightKG: Double = 70.0,
+         xp: Int = 0) {
         
         self.name = name
         self.age = age
@@ -42,6 +47,7 @@ struct UserProfile: Identifiable, Codable {
         self.experienceLevel = experienceLevel
         self.heightCM = heightCM
         self.weightKG = weightKG
+        self.xp = xp
     }
 }
     
