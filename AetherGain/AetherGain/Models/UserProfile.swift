@@ -28,6 +28,15 @@ struct UserProfile: Identifiable, Codable {
     //Criterion 4
     var xp: Int = 0
     
+    //Criterion 6
+    var dailyWaterML: Double = 0.0
+    var sleepHours: Double = 0.0
+    var customHabitName: String = "Meditation"  // User-defined habit name
+    var customHabitCompletedToday: Bool = false
+    var streakDays: Int = 0                 // Consecutive days
+    var lastHabitDate: Date? = nil
+    var remindersEnabled: Bool = false
+    
     init() {} // Default initializer (needed for previews and testing)
     
     // Initializer for creating with values
@@ -38,7 +47,14 @@ struct UserProfile: Identifiable, Codable {
          experienceLevel: String = "Beginner",
          heightCM: Double = 170.0,
          weightKG: Double = 70.0,
-         xp: Int = 0) {
+         xp: Int = 0,
+         dailyWaterML: Double = 0.0,
+         sleepHours: Double = 0.0,
+         customHabitName: String = "Meditation",
+         customHabitCompletedToday: Bool = false,
+         streakDays: Int = 0,
+         lastHabitDate: Date? = nil,
+         remindersEnabled: Bool = false) {
         
         self.name = name
         self.age = age
@@ -48,6 +64,13 @@ struct UserProfile: Identifiable, Codable {
         self.heightCM = heightCM
         self.weightKG = weightKG
         self.xp = xp
+        self.dailyWaterML = dailyWaterML
+        self.sleepHours = sleepHours
+        self.customHabitName = customHabitName
+        self.customHabitCompletedToday = customHabitCompletedToday
+        self.streakDays = streakDays
+        self.lastHabitDate = lastHabitDate
+        self.remindersEnabled = remindersEnabled
     }
 }
     

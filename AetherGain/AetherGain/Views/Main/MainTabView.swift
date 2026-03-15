@@ -73,6 +73,19 @@ struct MainTabView: View {
                 Image(systemName: "gearshape.fill")
                 Text("Settings")
             }
+            
+            //Meal View Tab for meal logging
+            MealLogView()
+                .tabItem {
+                    Image(systemName: "fork.knife")
+                    Text("Meals")
+                }
+            
+            HabitsView()
+                .tabItem {
+                    Image(systemName: "drop.fill")
+                    Text("Habits")
+                }
         }
     }
 }
