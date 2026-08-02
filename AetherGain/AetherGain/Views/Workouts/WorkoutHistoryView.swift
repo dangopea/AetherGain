@@ -61,7 +61,13 @@ struct WorkoutHistoryView: View {
                         emptyState
                     } else {
                         ForEach(filteredAndSortedHistory) { session in
-                            sessionCard(session)
+                            AGSwipeToDelete(onDelete: {
+                                let xp = session.totalXP
+                                workoutVM.deleteSession(session)
+                                AGToastCenter.shared.show("Deleted · refunded \(xp) XP", kind: .info)
+                            }) {
+                                sessionCard(session)
+                            }
                         }
                     }
                 }
@@ -250,7 +256,11 @@ struct WorkoutHistoryView: View {
 
             Divider().background(AGColor.stroke)
 
-            ForEach(session.exercises) { exercise in
+            // Use enumerated + index identity so historical sessions whose
+            // exercises were saved before Exercise.id was fixed still render
+            // correctly (their ids collapsed to nil under @DocumentID).
+            ForEach(Array(session.exercises.enumerated()), id: \.offset) { pair in
+                let exercise = pair.element
                 HStack(spacing: 10) {
                     Circle().fill(colorFor(exercise.category ?? .strength))
                         .frame(width: 8, height: 8)

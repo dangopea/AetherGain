@@ -192,7 +192,12 @@ struct MealLogView: View {
                 .buttonStyle(.plain)
             } else {
                 ForEach(items) { entry in
-                    mealRow(entry)
+                    AGSwipeToDelete(onDelete: {
+                        mealVM.deleteMeal(entry)
+                        AGToastCenter.shared.show("Removed \(entry.foodName)", kind: .info)
+                    }) {
+                        mealRow(entry)
+                    }
                     Divider().background(AGColor.stroke)
                 }
                 Button {
@@ -382,13 +387,30 @@ struct MealLogView: View {
     private var photoCard: some View {
         VStack(spacing: 10) {
             if let previewImage {
-                Image(uiImage: previewImage)
-                    .resizable().scaledToFill()
-                    .frame(height: 180)
-                    .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12)
-                        .stroke(AGColor.amber.opacity(0.4), lineWidth: 1))
+                ZStack(alignment: .topTrailing) {
+                    Image(uiImage: previewImage)
+                        .resizable().scaledToFill()
+                        .frame(height: 180)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12)
+                            .stroke(AGColor.amber.opacity(0.4), lineWidth: 1))
+                    Button {
+                        self.previewImage = nil
+                        self.selectedPhoto = nil
+                        mealVM.clearPhotoAnalysis()
+                        AGHaptics.tap()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Circle().fill(Color.black.opacity(0.7)))
+                            .overlay(Circle().stroke(AGColor.danger, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(8)
+                }
             } else {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
@@ -459,13 +481,19 @@ struct MealLogView: View {
 
     private var foodNameCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            AGSectionHeader(title: "Food", subtitle: "Enter or edit — then calculate macros.")
-            TextField("e.g. Oats, Idli, Chicken", text: $mealVM.currentMeal.foodName)
+            AGSectionHeader(title: "Food", subtitle: "One item OR a bowl of comma-separated items.")
+            TextField("e.g. Oats · or · 100g oats, 2 cups milk, 30g protein",
+                      text: $mealVM.currentMeal.foodName, axis: .vertical)
+                .lineLimit(1...3)
                 .font(AGFont.body(15))
                 .foregroundColor(AGColor.ink)
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .background(RoundedRectangle(cornerRadius: 10).fill(AGColor.panelHi))
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(AGColor.stroke, lineWidth: 1))
+
+            Text("TIP: separate multiple items with commas to log as one bowl.")
+                .kerning(1).font(AGFont.hud(9))
+                .foregroundColor(AGColor.inkMuted)
 
             HStack(spacing: 10) {
                 AGGhostButton(title: "Calculate macros", icon: "function", accent: AGColor.teal) {

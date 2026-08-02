@@ -50,11 +50,33 @@ class MealViewModel: ObservableObject {
 
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
+    private var authStateHandle: AuthStateDidChangeListenerHandle?
     private var userID: String? { Auth.auth().currentUser?.uid }
 
     init() {
         resetCurrentMeal()
+        // Listen for auth changes: (1) load meals as soon as sign-in resolves
+        // (so we don't miss meals when the VM is constructed before Firebase
+        // Auth has restored the session), and (2) clear + detach on sign-out.
+        authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            guard let self else { return }
+            if user?.uid != nil {
+                self.loadMeals()
+            } else {
+                self.meals = []
+                self.listener?.remove()
+                self.listener = nil
+            }
+        }
+        // Also attempt an immediate load in case auth is already resolved.
         loadMeals()
+    }
+
+    deinit {
+        listener?.remove()
+        if let handle = authStateHandle {
+            Auth.auth().removeStateDidChangeListener(handle)
+        }
     }
 
     /// Populate the log form with an existing meal for editing.
@@ -174,11 +196,14 @@ class MealViewModel: ObservableObject {
             do {
                 try handler.perform([request])
                 let observations = request.results ?? []
-                // Keep top 12 at low threshold. Sort by confidence desc.
+                print("[MealVM] Vision returned \(observations.count) observations")
+                // Apple's built-in classifier taxonomy is generic and not
+                // food-specific, so we do NOT filter by confidence — we surface
+                // the top 15 no matter what. This guarantees the user sees
+                // chips (empty chip row was the "nothing happens" symptom).
                 let sorted = observations
-                    .filter { $0.confidence >= 0.02 }
                     .sorted { $0.confidence > $1.confidence }
-                    .prefix(12)
+                    .prefix(15)
 
                 let candidates: [FoodCandidate] = sorted.map { obs in
                     let matched = FoodDatabase.bestMatch(fromLabels: [(obs.identifier, obs.confidence)])?.name
@@ -195,11 +220,10 @@ class MealViewModel: ObservableObject {
                     self.isAnalyzingPhoto = false
                     if let food = bestFood {
                         self.applyFood(food)
-                    } else if let top = sorted.first {
-                        self.currentMeal.foodName = top.identifier.capitalized
-                        self.errorMessage = "Detected \"\(top.identifier)\". Tap a chip below or edit the name, then tap Calculate."
+                    } else if !sorted.isEmpty {
+                        self.errorMessage = "Detected \(observations.count) labels — none matched a known food. Tap a chip below to use its label, or edit the name and tap Calculate."
                     } else {
-                        self.errorMessage = "Couldn't classify this photo. Enter a food name manually."
+                        self.errorMessage = "The on-device classifier returned no labels. Enter a food name manually."
                     }
                 }
             } catch {
@@ -209,6 +233,13 @@ class MealViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    /// Wipe photo-related state (used by the delete-photo button).
+    func clearPhotoAnalysis() {
+        candidates = []
+        referenceHint = nil
+        errorMessage = nil
     }
 
     func selectCandidate(_ candidate: FoodCandidate) {
@@ -228,11 +259,170 @@ class MealViewModel: ObservableObject {
             errorMessage = "Enter a food name first."
             return
         }
+        // "Bowl mode": if the user typed a comma-separated list like
+        // "100g oats, 2 cups milk, 30g protein powder", parse each ingredient,
+        // look each up locally, and sum the macros for the whole meal.
+        if name.contains(",") {
+            calculateBowlMacros(from: name)
+            return
+        }
         if let match = FoodDatabase.byName(name) {
             applyFood(match)
             return
         }
         fetchFromOpenFoodFacts(query: name)
+    }
+
+    // MARK: - Bowl (multi-ingredient) parsing
+
+    /// One parsed ingredient token from a comma-separated string.
+    private struct BowlIngredient {
+        var amount: Double
+        var unit: String
+        var name: String
+    }
+
+    /// Split, parse, look up locally, sum macros. Ingredients that don't map
+    /// to the local DB are noted in the reference hint so the user knows what
+    /// was skipped.
+    private func calculateBowlMacros(from input: String) {
+        let tokens = input
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+
+        var totalCal = 0.0, totalPro = 0.0, totalCarb = 0.0, totalFat = 0.0
+        var totalGrams = 0.0
+        var summaries: [String] = []
+        var unknown: [String] = []
+
+        for token in tokens {
+            let ing = parseIngredient(token)
+            guard let food = FoodDatabase.byName(ing.name) else {
+                unknown.append(ing.name)
+                continue
+            }
+            let grams = gramsFor(amount: ing.amount, unit: ing.unit, food: food)
+            let factor = grams / 100.0
+            let cal = food.calories * factor
+            let pro = food.protein * factor
+            let carb = food.carbs * factor
+            let fat = food.fat * factor
+            totalCal += cal
+            totalPro += pro
+            totalCarb += carb
+            totalFat += fat
+            totalGrams += grams
+            summaries.append(String(format: "%@ (%.0f g → %.0f kcal)", food.name, grams, cal))
+        }
+
+        guard !summaries.isEmpty else {
+            errorMessage = "Couldn't recognise any items in \"\(input)\". Try simpler names (e.g. \"100g oats, 250ml milk\")."
+            return
+        }
+
+        // Store per-100g equivalents so the amount slider still works if the
+        // user tweaks amount afterwards — using the WHOLE bowl as one 100g
+        // reference (per-100g = totals / (totalGrams/100)).
+        let per100Factor = max(1, totalGrams) / 100.0
+        currentMeal.per100gCalories = totalCal / per100Factor
+        currentMeal.per100gProtein  = totalPro / per100Factor
+        currentMeal.per100gCarbs    = totalCarb / per100Factor
+        currentMeal.per100gFat      = totalFat / per100Factor
+        currentMeal.grams = totalGrams
+        currentMeal.calories = totalCal.rounded()
+        currentMeal.protein  = (totalPro * 10).rounded() / 10
+        currentMeal.carbs    = (totalCarb * 10).rounded() / 10
+        currentMeal.fat      = (totalFat * 10).rounded() / 10
+        currentMeal.amount = totalGrams
+        currentMeal.unit = "g"
+        currentMeal.macroSource = "Local DB"
+
+        var hint = "SRC: BOWL · " + summaries.joined(separator: " + ")
+        if !unknown.isEmpty {
+            hint += " · SKIPPED: " + unknown.joined(separator: ", ")
+        }
+        referenceHint = hint
+        errorMessage = unknown.isEmpty ? nil :
+            "Ingredients not recognised: \(unknown.joined(separator: ", ")). Rename or omit them."
+    }
+
+    /// Parse "100g oats" / "2 cups milk" / "30g protein powder" / "1 apple".
+    private func parseIngredient(_ raw: String) -> BowlIngredient {
+        // Regex: optional number+unit-glued (30g), then optional number and
+        // unit words, then the food name at the end.
+        let text = raw.lowercased().trimmingCharacters(in: .whitespaces)
+
+        // Try "<number><letters> rest" (e.g. "30g oats", "250ml milk")
+        if let match = text.range(of: #"^(\d+(?:\.\d+)?)([a-z]+)\s+(.+)$"#,
+                                  options: .regularExpression) {
+            let full = String(text[match])
+            // Extract via components — regex captures aren't as easy in Swift
+            // NSString without NSRegularExpression, so do a manual split.
+            var num = ""
+            var unit = ""
+            var idx = full.startIndex
+            while idx < full.endIndex, full[idx].isNumber || full[idx] == "." {
+                num.append(full[idx]); idx = full.index(after: idx)
+            }
+            while idx < full.endIndex, full[idx].isLetter {
+                unit.append(full[idx]); idx = full.index(after: idx)
+            }
+            let rest = full[idx...].trimmingCharacters(in: .whitespaces)
+            let amount = Double(num) ?? 1
+            return BowlIngredient(amount: amount, unit: unit, name: rest)
+        }
+
+        // Try "<number> <unit> rest" (e.g. "2 cups milk", "1 large egg")
+        if let match = text.range(of: #"^(\d+(?:\.\d+)?)\s+(\S+)\s+(.+)$"#,
+                                  options: .regularExpression) {
+            let parts = text[match].split(separator: " ", maxSplits: 2,
+                                          omittingEmptySubsequences: true)
+            if parts.count == 3 {
+                return BowlIngredient(
+                    amount: Double(parts[0]) ?? 1,
+                    unit: String(parts[1]),
+                    name: String(parts[2])
+                )
+            }
+        }
+
+        // "<number> rest" (e.g. "2 eggs") — no unit, treat as pieces.
+        if let match = text.range(of: #"^(\d+(?:\.\d+)?)\s+(.+)$"#,
+                                  options: .regularExpression) {
+            let parts = text[match].split(separator: " ", maxSplits: 1,
+                                          omittingEmptySubsequences: true)
+            if parts.count == 2 {
+                return BowlIngredient(
+                    amount: Double(parts[0]) ?? 1,
+                    unit: "piece",
+                    name: String(parts[1])
+                )
+            }
+        }
+
+        // Fallback: no numbers, treat as one serving.
+        return BowlIngredient(amount: 1, unit: "serving", name: text)
+    }
+
+    /// Convert an amount+unit to grams using the food's default serving.
+    /// Shares logic with gramsForCurrentAmount but takes explicit params so
+    /// we can call it for bowl ingredients.
+    private func gramsFor(amount: Double, unit: String, food: FoodMacros) -> Double {
+        let u = unit.lowercased()
+        if ["g", "gm", "gram", "grams"].contains(u) { return amount }
+        if u == "kg" { return amount * 1000 }
+        if ["ml", "milliliter", "milliliters"].contains(u) { return amount }
+        if u == "l" { return amount * 1000 }
+        if u == "cup" || u == "cups" { return amount * 240 }
+        if u == "tbsp" || u == "tablespoon" { return amount * 15 }
+        if u == "tsp" || u == "teaspoon" { return amount * 5 }
+        if u == "oz" || u == "ounce" { return amount * 28.35 }
+        if u == "small"  { return amount * food.defaultServingG * 0.75 }
+        if u == "large"  { return amount * food.defaultServingG * 1.25 }
+        if u == "medium" { return amount * food.defaultServingG }
+        // pieces / servings / anything else — default serving size
+        return amount * food.defaultServingG
     }
 
     private func applyFood(_ food: FoodMacros) {
@@ -363,6 +553,4 @@ class MealViewModel: ObservableObject {
         if let s = any as? String { return Double(s) ?? 0 }
         return 0
     }
-
-    deinit { listener?.remove() }
 }

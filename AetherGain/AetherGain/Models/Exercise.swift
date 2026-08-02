@@ -28,8 +28,14 @@ enum ExerciseCategory: String, Codable, CaseIterable, Identifiable {
 }
 
 struct Exercise: Identifiable, Codable {
-    @DocumentID var id: String? = UUID().uuidString
-    
+    // NOTE: This used to be `@DocumentID var id: String?` but @DocumentID
+    // only works on top-level Firestore documents. When an Exercise sits
+    // inside `WorkoutSession.exercises`, @DocumentID silently drops the id
+    // during encode and decodes back to nil, which makes SwiftUI's ForEach
+    // treat every exercise as the same identity and render duplicates.
+    // Plain String default UUID keeps identity stable through Codable.
+    var id: String = UUID().uuidString
+
     var type: String = "" //You can add stuff in like "Bench Press", "Running"
     var category: ExerciseCategory? = .strength
     var sets: Int = 3

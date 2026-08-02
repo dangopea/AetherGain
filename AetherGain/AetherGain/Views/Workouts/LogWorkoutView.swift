@@ -17,6 +17,7 @@ struct LogWorkoutView: View {
         ScrollView {
             VStack(spacing: 14) {
                 xpHeaderCard
+                dateCard
 
                 ForEach(workoutVM.currentSession.exercises.indices, id: \.self) { index in
                     exerciseCard(index: index)
@@ -56,6 +57,34 @@ struct LogWorkoutView: View {
                     .font(AGFont.caption(11)).foregroundColor(AGColor.inkMuted)
             }
             Spacer()
+        }
+        .agCard()
+    }
+
+    private var dateCard: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "calendar")
+                .foregroundColor(AGColor.teal)
+                .font(.system(size: 16, weight: .bold))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("SESSION DATE").kerning(1.4).font(AGFont.hud(9))
+                    .foregroundColor(AGColor.inkMuted)
+                Text("Backdate to log a past workout.")
+                    .font(AGFont.body(11)).foregroundColor(AGColor.inkMuted)
+            }
+            Spacer()
+            DatePicker(
+                "",
+                selection: Binding(
+                    get: { workoutVM.currentSession.date },
+                    set: { workoutVM.currentSession.date = $0 }
+                ),
+                in: ...Date(),
+                displayedComponents: [.date, .hourAndMinute]
+            )
+            .labelsHidden()
+            .datePickerStyle(.compact)
+            .tint(AGColor.amber)
         }
         .agCard()
     }

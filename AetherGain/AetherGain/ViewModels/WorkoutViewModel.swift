@@ -78,7 +78,12 @@ class WorkoutViewModel: ObservableObject {
         
         let earnedXP = GameEngine.workoutXP(for: currentSession)
         currentSession.totalXP = earnedXP
-        currentSession.date = Date()
+        // Preserve the date the user picked (or default to now if unset for
+        // some reason — WorkoutSession()'s default is Date()).
+        if currentSession.date > Date() {
+            // Sanity-clamp: never allow future-dated workouts.
+            currentSession.date = Date()
+        }
         
         
         //Saves session + updates profile XP in one operation
