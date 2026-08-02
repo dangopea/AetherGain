@@ -189,47 +189,40 @@ class MealViewModel: ObservableObject {
             self.candidates = []
         }
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        // Delegate to FoodClassifier which picks the bundled CoreML model
+        // (Food-101 style) if present, else Apple's generic VNClassifyImage.
+        FoodClassifier.classify(image: image) { [weak self] result in
             guard let self else { return }
-            let request = VNClassifyImageRequest()
-            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-            do {
-                try handler.perform([request])
-                let observations = request.results ?? []
-                print("[MealVM] Vision returned \(observations.count) observations")
-                // Apple's built-in classifier taxonomy is generic and not
-                // food-specific, so we do NOT filter by confidence — we surface
-                // the top 15 no matter what. This guarantees the user sees
-                // chips (empty chip row was the "nothing happens" symptom).
-                let sorted = observations
-                    .sorted { $0.confidence > $1.confidence }
-                    .prefix(15)
-
-                let candidates: [FoodCandidate] = sorted.map { obs in
-                    let matched = FoodDatabase.bestMatch(fromLabels: [(obs.identifier, obs.confidence)])?.name
-                    return FoodCandidate(rawLabel: obs.identifier,
-                                         confidence: obs.confidence,
+            switch result {
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.isAnalyzingPhoto = false
+                    self.errorMessage = "Photo analysis failed: \(error.localizedDescription)"
+                }
+            case .success(let classified):
+                let labelsAndConfs = classified.map { ($0.label, $0.confidence) }
+                let candidates: [FoodCandidate] = classified.map { c in
+                    let matched = FoodDatabase.bestMatch(fromLabels: [(c.label, c.confidence)])?.name
+                    return FoodCandidate(rawLabel: c.label,
+                                         confidence: c.confidence,
                                          matched: matched)
                 }
-                let bestFood = FoodDatabase.bestMatch(
-                    fromLabels: sorted.map { ($0.identifier, $0.confidence) }
-                )
+                let bestFood = FoodDatabase.bestMatch(fromLabels: labelsAndConfs)
 
                 DispatchQueue.main.async {
                     self.candidates = candidates
                     self.isAnalyzingPhoto = false
+                    let usingBundled = FoodClassifier.isBundledModelAvailable
                     if let food = bestFood {
                         self.applyFood(food)
-                    } else if !sorted.isEmpty {
-                        self.errorMessage = "Detected \(observations.count) labels — none matched a known food. Tap a chip below to use its label, or edit the name and tap Calculate."
+                    } else if let top = classified.first {
+                        // Prefill the top label so user just needs to hit Calculate.
+                        self.currentMeal.foodName = top.label.capitalized
+                        let src = usingBundled ? "FoodClassifier" : "Vision default"
+                        self.errorMessage = "\(src) returned \(classified.count) labels — none matched the local DB. Tap a chip, or edit the name and Calculate (OpenFoodFacts will try to resolve it)."
                     } else {
-                        self.errorMessage = "The on-device classifier returned no labels. Enter a food name manually."
+                        self.errorMessage = "The classifier returned no labels. Enter a food name manually."
                     }
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.isAnalyzingPhoto = false
-                    self.errorMessage = "Photo analysis failed: \(error.localizedDescription)"
                 }
             }
         }

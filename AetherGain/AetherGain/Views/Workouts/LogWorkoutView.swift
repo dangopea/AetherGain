@@ -178,7 +178,7 @@ struct LogWorkoutView: View {
                 Button {
                     guard workoutVM.currentSession.exercises.indices.contains(index) else { return }
                     workoutVM.currentSession.exercises[index].category = c
-                    AGHaptics.tap()
+                        AGHaptics.tap()
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: iconFor(c))
