@@ -43,82 +43,71 @@ class HabitsViewModel: ObservableObject {
     
     func saveHabits() {
         guard let uid = userID else {
-            errorMessage = "Not logged in"
+            DispatchQueue.main.async {
+                self.errorMessage = "Not logged in"
+                self.isLoading = false
+            }
             return
         }
-        
+
+        // Compute streak/XP FIRST so a single write persists everything.
+        applyStreakChange()
+
         isLoading = true
-        
+
         let ref = db.collection("users").document(uid)
         do {
             try ref.setData(from: profile, merge: true) { [weak self] error in
-                if let error {
-                    self?.errorMessage = error.localizedDescription
-                } else {
-                    self?.errorMessage = nil
-                    self?.updateStreakAndXP()
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    if let error {
+                        self.errorMessage = error.localizedDescription
+                    } else {
+                        self.errorMessage = nil
+                    }
+                    self.isLoading = false
                 }
-                self?.isLoading = false
             }
         } catch {
-            errorMessage = error.localizedDescription
-            isLoading = false
+            DispatchQueue.main.async {
+                self.errorMessage = error.localizedDescription
+                self.isLoading = false
+            }
         }
     }
-    
+
     // MARK: - Streak & XP Logic
-    private func updateStreakAndXP() {
+    /// Only positive events touch the streak. We never reset the streak because
+    /// "today's targets aren't done yet" — that's just an in-progress day.
+    /// Resets only happen when we detect a *missed* day (>1 day gap when we
+    /// hit all targets again).
+    private func applyStreakChange() {
+        let allDoneToday = waterHitToday && sleepHitToday && profile.customHabitCompletedToday
+        guard allDoneToday else { return }
+
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        
-        // Check if all habits completed today
-        let waterDone = profile.dailyWaterML >= 2000
-        let sleepDone = profile.sleepHours >= 7
-        let habitDone = profile.customHabitCompletedToday
-        
-        let allDoneToday = waterDone && sleepDone && habitDone
-        
+
         if let last = profile.lastHabitDate {
             let lastDay = calendar.startOfDay(for: last)
             let daysSince = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
-            
-            if daysSince == 0 {
-                // Same day — update streak only if completed
-                if allDoneToday {
-                    // Already counted today — do nothing extra
-                } else {
-                    // Incomplete today → reset streak
-                    profile.streakDays = 0
-                }
-            } else if daysSince == 1 {
-                // Consecutive day
-                if allDoneToday {
-                    profile.streakDays += 1
-                } else {
-                    profile.streakDays = 0
-                }
+            if daysSince == 0 { return }         // already counted today
+            if daysSince == 1 {
+                profile.streakDays += 1          // consecutive day
             } else {
-                // Missed day(s) → reset
-                profile.streakDays = 0
+                profile.streakDays = 1           // missed one or more days
             }
         } else {
-            // First ever completion
-            if allDoneToday {
-                profile.streakDays = 1
-            }
+            profile.streakDays = 1
         }
-        
-        // Update last completed date only if done today
-        if allDoneToday {
-            profile.lastHabitDate = today
-            // Optional: Bonus XP for maintaining streak
-            // let bonusXP = profile.streakDays * 10
-            // profile.xp += bonusXP
-        }
-        
-        // Save changes
-        saveHabits()  // Recursive call safe because merge=true
+        profile.lastHabitDate = today
+
+        let bonusXP = 20 + (profile.streakDays * 5)
+        profile.xp += bonusXP
     }
+
+    private var waterHitToday: Bool { profile.dailyWaterML >= profile.waterMLTarget * 0.8 }
+    private var sleepHitToday: Bool { profile.sleepHours >= profile.sleepHoursTarget * 0.85 }
     
     // MARK: - Reminders
     func toggleReminders(enabled: Bool) {
@@ -141,26 +130,27 @@ class HabitsViewModel: ObservableObject {
         }
     }
     
-    private func scheduleDailyReminder() {
+    func scheduleDailyReminder() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        
+
         let content = UNMutableNotificationContent()
-        content.title = "Daily Habit Check-in"
-        content.body = "Log your water (\(Int(profile.dailyWaterML)) ml target), sleep, and \(profile.customHabitName) today!"
+        content.title = "Daily habit check-in"
+        content.body  = "Log \(Int(profile.waterMLTarget)) ml water, \(Int(profile.sleepHoursTarget))h sleep, and \(profile.customHabitName)."
         content.sound = .default
-        
-        // Schedule at 8:00 PM IST
+
         var dateComponents = DateComponents()
-        dateComponents.hour = 20
-        dateComponents.minute = 0
-        
+        dateComponents.hour   = profile.reminderHour
+        dateComponents.minute = profile.reminderMinute
+
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-        
         let request = UNNotificationRequest(identifier: "dailyHabitReminder", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request) { error in
-            if let error {
-                print("Notification scheduling error: \(error)")
-            }
+            if let error { print("Notification scheduling error: \(error)") }
         }
     }
+
+    /// Streak logic uses configurable water/sleep targets now.
+    
+    // Removed stopSavingIndicatorIfServerIsSlow() as it's no longer necessary
+    
 }

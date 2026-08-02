@@ -2,76 +2,104 @@
 //  UserProfile.swift
 //  AetherGain
 //
-// A data structure for any possible profile information collection
-//
-//  Created by Dhriti on 1/4/2569 BE.
+//  Firestore user document. Encrypted at rest by Google Cloud and in
+//  transit via HTTPS. Also stores computed daily targets (BMR/TDEE)
+//  and customisable habit/reminder settings.
 //
 
 import Foundation
 import FirebaseFirestore
-// This helps w/ saving or loading; Firestore is responsible for automatic encryption at rest (Google servers) and in transit (HTTPS), and also offline support & real-time sync c
 
+enum Sex: String, Codable, CaseIterable, Identifiable {
+    case male   = "Male"
+    case female = "Female"
+    case other  = "Prefer not to say"
+    var id: String { rawValue }
+}
 
-//User profile data specifications, stored in Firestore
-struct UserProfile: Identifiable, Codable {
-    @DocumentID var id: String? = UUID().uuidString  // Firestore document ID
-    
-    //Criterion 2
-    var name: String = ""
-    var age: Int = 18
-    var goals: String = ""  //You can add anything like "Lose weight", "Build muscle"
-    var preferences: String = ""  // Options could be "Vegetarian", favorite workouts
-    var experienceLevel: String = "Beginner"  //Levels: Beginner, Intermediate, Advanced
-    var heightCM: Double = 170.0
-    var weightKG: Double = 70.0
-    
-    //Criterion 4
-    var xp: Int = 0
-    
-    //Criterion 6
-    var dailyWaterML: Double = 0.0
-    var sleepHours: Double = 0.0
-    var customHabitName: String = "Meditation"  // User-defined habit name
-    var customHabitCompletedToday: Bool = false
-    var streakDays: Int = 0                 // Consecutive days
-    var lastHabitDate: Date? = nil
-    var remindersEnabled: Bool = false
-    
-    init() {} // Default initializer (needed for previews and testing)
-    
-    // Initializer for creating with values
-    init(name: String = "",
-         age: Int = 18,
-         goals: String = "",
-         preferences: String = "",
-         experienceLevel: String = "Beginner",
-         heightCM: Double = 170.0,
-         weightKG: Double = 70.0,
-         xp: Int = 0,
-         dailyWaterML: Double = 0.0,
-         sleepHours: Double = 0.0,
-         customHabitName: String = "Meditation",
-         customHabitCompletedToday: Bool = false,
-         streakDays: Int = 0,
-         lastHabitDate: Date? = nil,
-         remindersEnabled: Bool = false) {
-        
-        self.name = name
-        self.age = age
-        self.goals = goals
-        self.preferences = preferences
-        self.experienceLevel = experienceLevel
-        self.heightCM = heightCM
-        self.weightKG = weightKG
-        self.xp = xp
-        self.dailyWaterML = dailyWaterML
-        self.sleepHours = sleepHours
-        self.customHabitName = customHabitName
-        self.customHabitCompletedToday = customHabitCompletedToday
-        self.streakDays = streakDays
-        self.lastHabitDate = lastHabitDate
-        self.remindersEnabled = remindersEnabled
+enum FitnessGoal: String, Codable, CaseIterable, Identifiable {
+    case cut      = "Cut"
+    case maintain = "Maintain"
+    case bulk     = "Bulk"
+    var id: String { rawValue }
+    var icon: String {
+        switch self {
+        case .cut:      return "arrow.down.circle.fill"
+        case .maintain: return "equal.circle.fill"
+        case .bulk:     return "arrow.up.circle.fill"
+        }
     }
 }
-    
-    
+
+enum ProteinPreference: String, Codable, CaseIterable, Identifiable {
+    case low    = "Low"
+    case medium = "Medium"
+    case high   = "High"
+    var id: String { rawValue }
+    /// Grams of protein per kg of body weight.
+    var gramsPerKg: Double {
+        switch self {
+        case .low: return 1.6
+        case .medium: return 2.0
+        case .high: return 2.5
+        }
+    }
+}
+
+struct UserProfile: Identifiable, Codable {
+    @DocumentID var id: String? = UUID().uuidString
+
+    // --- Identity (Criterion 2)
+    var name: String = ""
+    var age: Int = 18
+    var sex: Sex = .other
+    var goals: String = ""
+    var preferences: String = ""
+    var experienceLevel: String = "Beginner"
+
+    // --- Anthropometrics
+    var heightCM: Double = 170.0
+    var weightKG: Double = 70.0
+    var bodyFatPercent: Double? = nil
+
+    // --- Lifestyle (fuels BMR / TDEE)
+    var avgStepsPerDay: Int = 6000
+    var workoutsPerWeek: Int = 3
+
+    // --- Goal & targets
+    var fitnessGoal: FitnessGoal = .maintain
+    var goalRateKgPerWeek: Double = 0.5
+    var proteinPreference: ProteinPreference = .medium
+
+    // Computed by TargetsCalculator — cached for offline display.
+    var bmr: Int = 0
+    var tdee: Int = 0
+    var calorieTarget: Int = 0
+    var proteinTargetG: Int = 0
+    var carbsTargetG: Int = 0
+    var fatTargetG: Int = 0
+    var hasOnboardedTargets: Bool = false
+
+    // --- Habit customisation (Criterion 6)
+    var dailyWaterML: Double = 0.0
+    var waterMLTarget: Double = 2500
+    var sleepHours: Double = 0.0
+    var sleepHoursTarget: Double = 8
+    var customHabitName: String = "Meditation"
+    var customHabitCompletedToday: Bool = false
+    var streakDays: Int = 0
+    var lastHabitDate: Date? = nil
+
+    var remindersEnabled: Bool = false
+    var reminderHour: Int = 20
+    var reminderMinute: Int = 0
+
+    // --- Gamification & privacy
+    var xp: Int = 0
+    var sharesToLeaderboard: Bool? = false
+
+    // --- Avatar (Firebase Storage URL)
+    var profileImageURL: String? = nil
+
+    init() {}
+}

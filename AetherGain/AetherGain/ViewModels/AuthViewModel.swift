@@ -69,6 +69,19 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    /// Send a password-reset email via Firebase Auth. `completion(nil)` on success.
+    func sendPasswordReset(email: String, completion: @escaping (Error?) -> Void) {
+        let trimmed = email.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            let err = NSError(domain: "AGAuth", code: 400,
+                              userInfo: [NSLocalizedDescriptionKey: "Enter your email first."])
+            completion(err); return
+        }
+        Auth.auth().sendPasswordReset(withEmail: trimmed) { error in
+            completion(error)
+        }
+    }
+
     //Function: Sign the user out entirely.
     func signOut() {
         do {

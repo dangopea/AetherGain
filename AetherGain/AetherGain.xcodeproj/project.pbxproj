@@ -38,6 +38,10 @@
 		FE2775E92F0A443600D4454F /* AetherGain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AetherGain.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE2775F62F0A443900D4454F /* AetherGainTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AetherGainTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE2776002F0A443A00D4454F /* AetherGainUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AetherGainUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEB06A7C301E02E60023D6B4 /* AGTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AGTheme.swift; sourceTree = "<group>"; };
+		FEB06A7D301E02FE0023D6B4 /* AGToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AGToast.swift; sourceTree = "<group>"; };
+		FEB06A7F301E03250023D6B4 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		FEB06A84301E03730023D6B4 /* ProgressAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressAnalytics.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -98,6 +102,8 @@
 				FE2775F92F0A443900D4454F /* AetherGainTests */,
 				FE2776032F0A443A00D4454F /* AetherGainUITests */,
 				FE2775EA2F0A443600D4454F /* Products */,
+				FEB06A7B301E02BC0023D6B4 /* DesignSystem */,
+				FEB06A7E301E031C0023D6B4 /* Services */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +115,24 @@
 				FE2776002F0A443A00D4454F /* AetherGainUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FEB06A7B301E02BC0023D6B4 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				FEB06A7C301E02E60023D6B4 /* AGTheme.swift */,
+				FEB06A7D301E02FE0023D6B4 /* AGToast.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		FEB06A7E301E031C0023D6B4 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FEB06A7F301E03250023D6B4 /* NetworkMonitor.swift */,
+				FEB06A84301E03730023D6B4 /* ProgressAnalytics.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -198,7 +222,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2610;
-				LastUpgradeCheck = 2610;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					FE2775E82F0A443600D4454F = {
 						CreatedOnToolsVersion = 26.1.1;
@@ -358,6 +382,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -415,6 +440,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};

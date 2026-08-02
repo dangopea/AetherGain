@@ -17,7 +17,20 @@ struct WorkoutSession: Identifiable, Codable {
     
     // Computed: is this a valid completed session?
     var isValidForXP: Bool {
-        !exercises.isEmpty && exercises.allSatisfy { $0.sets > 0 && $0.reps > 0 }
+        !exercises.isEmpty && exercises.allSatisfy { exercise in
+            guard !exercise.type.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                return false
+            }
+            
+            switch exercise.category ?? .strength {
+            case .strength:
+                return exercise.sets > 0 && exercise.reps > 0
+            case .cardio:
+                return (exercise.durationMinutes ?? 0) > 0 || (exercise.distanceKM ?? 0) > 0
+            case .mobility:
+                return (exercise.durationMinutes ?? 0) > 0
+            }
+        }
     }
     
     init() {}

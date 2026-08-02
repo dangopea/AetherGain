@@ -8,114 +8,226 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject private var authVM = AuthViewModel() // Creates AuthViewModel object for this screen
-    
-    //Text fields + UI local state
+    @StateObject private var authVM = AuthViewModel()
+
     @State private var email: String = ""
     @State private var password: String = ""
-    @State private var isSignupMode: Bool = false  // false = Login, true = Sign Up
+    @State private var isSignupMode: Bool = false
     @State private var errorMessage: String? = nil
-    
+    @State private var isBusy: Bool = false
+    @FocusState private var focused: Field?
+
+    private enum Field { case email, password }
+
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 24) {
-                
-                // App Title
-                Text("AetherGain")
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(.indigo)
-                
-                // Email Field
+        AGScreen {
+            ScrollView {
+                VStack(spacing: 22) {
+                    hero
+                    formCard
+                    footer
+                }
+                .padding(20)
+                .padding(.top, 24)
+            }
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .alert("Session expired", isPresented: $authVM.showTimeoutAlert) {
+            Button("OK") { }
+        } message: {
+            Text("You have been logged out due to 30 minutes of inactivity. Please log in again.")
+        }
+        .onTapGesture { authVM.userDidInteract() }
+        .onAppear { authVM.userDidInteract() }
+        .environmentObject(authVM)
+    }
+
+    // MARK: - Hero
+
+    private var hero: some View {
+        VStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(LinearGradient(colors: [AGColor.coral, AGColor.peach],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 92, height: 92)
+                    .shadow(color: AGColor.coral.opacity(0.35), radius: 14, x: 0, y: 8)
+                Image(systemName: "bolt.heart.fill")
+                    .font(.system(size: 44, weight: .bold))
+                    .foregroundColor(.white)
+            }
+            Text("AetherGain").font(AGFont.display(34)).foregroundColor(AGColor.ink)
+            Text(isSignupMode
+                 ? "Create your account to start earning XP."
+                 : "Welcome back — let's keep the streak alive.")
+                .font(AGFont.body(15))
+                .foregroundColor(AGColor.inkMuted)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+        }
+    }
+
+    // MARK: - Form
+
+    private var formCard: some View {
+        VStack(spacing: 14) {
+            fieldBox(icon: "envelope.fill", tint: AGColor.sky) {
                 TextField("Email", text: $email)
                     .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
+                    .textInputAutocapitalization(.never)
                     .disableAutocorrection(true)
-                    .padding()
-                    .background(Color(.secondarySystemBackground))
-                    .cornerRadius(12)
-                    .onTapGesture { authVM.userDidInteract() }
-                
-                // Password Field
+                    .focused($focused, equals: .email)
+                    .submitLabel(.next)
+                    .onSubmit { focused = .password }
+            }
+
+            fieldBox(icon: "lock.fill", tint: AGColor.lavender) {
                 SecureField("Password", text: $password)
-                    .padding()
-                    .background(Color(.secondarySystemBackground))
-                    .cornerRadius(12)
-                    .onTapGesture { authVM.userDidInteract() }
-                
-                // Error Message (if any)
-                if let error = errorMessage {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.caption)
-                        .padding(.horizontal)
-                }
-                
-                // Main Button (Sign Up or Log In)
-                Button(isSignupMode ? "Create Account" : "Log In") {
-                    errorMessage = nil
-                    
-                    if isSignupMode {
-                        authVM.signUp(email: email, password: password) { error in
-                            if let error = error as NSError? {
-                                // This prints the REAL detailed error to Xcode console
-                                print("🔴 Signup Error: \(error.localizedDescription)")
-                                print("🔴 Error Code: \(error.code)")
-                                print("🔴 Full Error: \(error)")
-                                
-                                errorMessage = error.localizedDescription
-                            }
-                        }
-                    } else {
-                        authVM.signIn(email: email, password: password) { error in
-                            if let error = error as NSError? {
-                                print("🔴 Login Error: \(error.localizedDescription)")
-                                print("🔴 Error Code: \(error.code)")
-                                print("🔴 Full Error: \(error)")
-                                
-                                errorMessage = error.localizedDescription
-                            }
-                        }
+                    .focused($focused, equals: .password)
+                    .submitLabel(.go)
+                    .onSubmit { submit() }
+            }
+
+            if !isSignupMode {
+                HStack {
+                    Spacer()
+                    Button {
+                        sendReset()
+                    } label: {
+                        Text("Forgot password?")
+                            .font(AGFont.caption(12))
+                            .foregroundColor(AGColor.teal)
                     }
-                    authVM.userDidInteract()
+                    .buttonStyle(.plain)
                 }
-                .font(.title3.bold())
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.indigo)
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                // Toggle between Login and Sign Up
-                Button(isSignupMode ? "Already have an account? Log In" : "Don't have an account? Sign Up") {
+            }
+
+            if let error = errorMessage {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                    Text(error).font(AGFont.caption(12))
+                }
+                .foregroundColor(AGColor.danger)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            AGPushButton(
+                title: isSignupMode ? "Create account" : "Log in",
+                icon: isSignupMode ? "sparkles" : "arrow.right",
+                fill: AGColor.coral,
+                isEnabled: !email.isEmpty && !password.isEmpty,
+                isLoading: isBusy
+            ) {
+                submit()
+            }
+
+            Button(action: {
+                withAnimation(.spring(response: 0.35)) {
                     isSignupMode.toggle()
                     errorMessage = nil
                 }
-                .foregroundColor(.indigo)
-                
-                Spacer()
+            }) {
+                HStack(spacing: 4) {
+                    Text(isSignupMode ? "Already have an account?" : "New here?")
+                        .foregroundColor(AGColor.inkMuted)
+                    Text(isSignupMode ? "Log in" : "Sign up")
+                        .foregroundColor(AGColor.coral).bold()
+                }
+                .font(AGFont.body(14))
             }
-            .padding()
-            .navigationTitle(isSignupMode ? "Sign Up" : "Log In")
-            .navigationBarTitleDisplayMode(.large)
-            
-            // Alert when session times out
-            .alert("Session Expired", isPresented: $authVM.showTimeoutAlert) {
-                Button("OK") { }
-            } message: {
-                Text("You have been logged out due to 30 minutes of inactivity. Please log in again.")
+            .buttonStyle(.plain)
+            .padding(.top, 4)
+        }
+        .agCard()
+    }
+
+    private func fieldBox<Content: View>(icon: String, tint: Color,
+                                         @ViewBuilder content: () -> Content) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(tint.opacity(0.20))
+                    .frame(width: 36, height: 36)
+                Image(systemName: icon).foregroundColor(tint)
             }
-            
-            // Reset timer whenever user interacts with the screen
-            .onTapGesture {
-                authVM.userDidInteract()
+            content()
+                .font(AGFont.body(15))
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AGColor.canvas)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(AGColor.stroke, lineWidth: 1)
+        )
+    }
+
+    private var footer: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 16) {
+                perk(icon: "flame.fill", label: "Streaks")
+                perk(icon: "trophy.fill", label: "Levels")
+                perk(icon: "chart.bar.fill", label: "Trends")
             }
-            .onAppear {
-                authVM.userDidInteract()
+            Text("Encrypted end-to-end • Firebase Auth")
+                .font(AGFont.caption(11))
+                .foregroundColor(AGColor.inkMuted)
+                .padding(.top, 4)
+        }
+        .padding(.top, 8)
+    }
+
+    private func perk(icon: String, label: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon).foregroundColor(AGColor.coral)
+            Text(label).foregroundColor(AGColor.inkMuted)
+        }
+        .font(AGFont.caption(12))
+    }
+
+    // MARK: - Actions
+
+    private func sendReset() {
+        errorMessage = nil
+        AGHaptics.tap()
+        authVM.sendPasswordReset(email: email) { error in
+            DispatchQueue.main.async {
+                if let err = error {
+                    errorMessage = err.localizedDescription
+                    AGToastCenter.shared.show(err.localizedDescription, kind: .error)
+                } else {
+                    AGToastCenter.shared.show("Reset link sent to \(email).", kind: .success)
+                }
             }
         }
-        // Share the same AuthViewModel instance with child views
-        .environmentObject(authVM)
+    }
+
+    private func submit() {
+        guard !isBusy else { return }
+        errorMessage = nil
+        isBusy = true
+        let handler: (Error?) -> Void = { error in
+            DispatchQueue.main.async {
+                isBusy = false
+                if let error = error as NSError? {
+                    errorMessage = error.localizedDescription
+                    AGHaptics.error()
+                } else {
+                    AGToastCenter.shared.show(isSignupMode ? "Welcome to AetherGain!" : "Welcome back!",
+                                              kind: .success,
+                                              celebrate: isSignupMode)
+                }
+            }
+        }
+
+        if isSignupMode {
+            authVM.signUp(email: email, password: password, completion: handler)
+        } else {
+            authVM.signIn(email: email, password: password, completion: handler)
+        }
+        authVM.userDidInteract()
     }
 }
 

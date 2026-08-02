@@ -83,17 +83,20 @@ class ProfileViewModel: ObservableObject {
         }
         
         isLoading = true
+        stopSavingIndicatorIfServerIsSlow()
         
         let docRef = db.collection("users").document(uid)
         
         do {
             try docRef.setData(from: profile) { [weak self] error in
-                if let error = error {
-                    self?.errorMessage = "Save error: \(error.localizedDescription)"
-                } else {
-                    self?.errorMessage = nil
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self?.errorMessage = "Save error: \(error.localizedDescription)"
+                    } else {
+                        self?.errorMessage = nil
+                    }
+                    self?.isLoading = false
                 }
-                self?.isLoading = false
             }
         } catch {
             errorMessage = "Encoding error: \(error.localizedDescription)"
@@ -108,6 +111,13 @@ class ProfileViewModel: ObservableObject {
         if let handle = authStateHandle {
             Auth.auth().removeStateDidChangeListener(handle)
             authStateHandle = nil
+        }
+    }
+    
+    private func stopSavingIndicatorIfServerIsSlow() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            guard let self, self.isLoading else { return }
+            self.isLoading = false
         }
     }
         

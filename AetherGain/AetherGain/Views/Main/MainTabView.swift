@@ -2,97 +2,96 @@
 //  MainTabView.swift
 //  AetherGain
 //
-//  Created by Dhriti on 1/4/2569 BE.
+//  5 tabs: Home, Workouts, Meals, Habits, Progress.
+//  Each tab is wrapped here in its own NavigationStack so child views
+//  don't nest navigation stacks.
 //
 
-import Foundation
 import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var authVM: AuthViewModel
-    
+
+    init() {
+        let tab = UITabBarAppearance()
+        tab.configureWithOpaqueBackground()
+        tab.backgroundColor = UIColor(AGColor.card)
+        tab.stackedLayoutAppearance.selected.iconColor = UIColor(AGColor.coral)
+        tab.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor(AGColor.coral),
+            .font: UIFont.systemFont(ofSize: 11, weight: .semibold)
+        ]
+        tab.stackedLayoutAppearance.normal.iconColor = UIColor(AGColor.inkMuted)
+        tab.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor(AGColor.inkMuted),
+            .font: UIFont.systemFont(ofSize: 11, weight: .medium)
+        ]
+        UITabBar.appearance().standardAppearance = tab
+        UITabBar.appearance().scrollEdgeAppearance = tab
+
+        let nav = UINavigationBarAppearance()
+        nav.configureWithTransparentBackground()
+        nav.backgroundColor = UIColor(AGColor.canvas)
+        nav.titleTextAttributes = [.foregroundColor: UIColor(AGColor.ink)]
+        nav.largeTitleTextAttributes = [.foregroundColor: UIColor(AGColor.ink)]
+        UINavigationBar.appearance().standardAppearance = nav
+        UINavigationBar.appearance().scrollEdgeAppearance = nav
+        UINavigationBar.appearance().compactAppearance = nav
+    }
+
     var body: some View {
         TabView {
-            
-            // Home Tab
-            VStack(spacing: 20) {
-                
-                Text("Home Dashboard")
-                    .font(.largeTitle.bold())
-                
-                Text("(Workouts, Streaks, XP coming soon)")
-                    .foregroundColor(.secondary)
-                
-                Spacer()
+            NavigationStack { HomeView() }
+                .tabItem { Label("Home", systemImage: "house.fill") }
+
+            NavigationStack { WorkoutsHubView() }
+                .tabItem { Label("Workouts", systemImage: "dumbbell.fill") }
+
+            NavigationStack { MealLogView() }
+                .tabItem { Label("Meals", systemImage: "fork.knife") }
+
+            NavigationStack { HabitsView() }
+                .tabItem { Label("Habits", systemImage: "drop.fill") }
+
+            NavigationStack { AGProgressScreen() }
+                .tabItem { Label("Progress", systemImage: "chart.bar.fill") }
+        }
+        .tint(AGColor.coral)
+    }
+}
+
+// MARK: - Workouts hub
+
+struct WorkoutsHubView: View {
+    @State private var selection: Int = 0
+
+    var body: some View {
+        AGScreen {
+            VStack(spacing: 12) {
+                Picker("", selection: $selection) {
+                    Text("Log").tag(0)
+                    Text("History").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                if selection == 0 {
+                    LogWorkoutView()
+                } else {
+                    WorkoutHistoryView()
+                }
             }
-            .tabItem {
-                Image(systemName: "house.fill")
-                Text("Home")
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Workouts").font(AGFont.headline(17))
             }
-            
-            // Log Workout Tab
-            LogWorkoutView()
-                .tabItem {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Log Workout")
-                }
-            
-            //Workout History Tab
-            WorkoutHistoryView()
-                .tabItem {
-                    Image(systemName: "clock.fill")
-                    Text("History")
-                }
-            
-            // Profile Tab
-            ProfileView()
-                .tabItem {
-                    Image(systemName: "person.fill")
-                    Text("Profile")
-                }
-            
-            // Settings Tab – with proper Sign Out button
-            VStack(spacing: 30) {
-                Text("Settings")
-                    .font(.largeTitle.bold())
-                
-                Button("Sign Out") {
-                    authVM.signOut()
-                }
-                .font(.title2)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(.red)
-                .cornerRadius(12)
-                .padding(.horizontal, 40)
-                
-                Spacer()
-            }
-            .tabItem {
-                Image(systemName: "gearshape.fill")
-                Text("Settings")
-            }
-            
-            //Meal View Tab for meal logging
-            MealLogView()
-                .tabItem {
-                    Image(systemName: "fork.knife")
-                    Text("Meals")
-                }
-            
-            HabitsView()
-                .tabItem {
-                    Image(systemName: "drop.fill")
-                    Text("Habits")
-                }
         }
     }
 }
 
-
-
 #Preview {
-    MainTabView()
-        .environmentObject(AuthViewModel())
+    MainTabView().environmentObject(AuthViewModel())
 }

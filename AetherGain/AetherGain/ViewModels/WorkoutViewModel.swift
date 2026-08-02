@@ -37,7 +37,23 @@ class WorkoutViewModel: ObservableObject {
     
     //Function: Add a new empty exercise to current session
     func addExercise() {
-        currentSession.exercises.append(Exercise())
+        currentSession.exercises.append(ExerciseTemplate.configuredExercise(named: "Bench Press"))
+    }
+    
+    func addCustomExercise(named name: String) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
+            errorMessage = "Enter an exercise name"
+            return
+        }
+        
+        currentSession.exercises.append(ExerciseTemplate.configuredExercise(named: trimmedName))
+        errorMessage = nil
+    }
+    
+    func applyTemplate(_ template: ExerciseTemplate, at index: Int) {
+        guard currentSession.exercises.indices.contains(index) else { return }
+        currentSession.exercises[index] = ExerciseTemplate.configuredExercise(named: template.name)
     }
     
     //Function: Remove exercise at a specific index
@@ -58,15 +74,9 @@ class WorkoutViewModel: ObservableObject {
         }
         
         isLoading = true
+        stopSavingIndicatorIfServerIsSlow()
         
-        // Calculate XP: base 50 + bonus for volume
-        var earnedXP = 50  // Minimum for any valid session
-        
-        for exercise in currentSession.exercises {
-            let volumeBonus = exercise.sets * exercise.reps * Int(exercise.weightKG / 10)
-            earnedXP += max(volumeBonus, 5)  // At least 5 per exercise
-        }
-        
+        let earnedXP = GameEngine.workoutXP(for: currentSession)
         currentSession.totalXP = earnedXP
         currentSession.date = Date()
         
@@ -92,17 +102,83 @@ class WorkoutViewModel: ObservableObject {
         
         // Commit both operations together
         batch.commit { [weak self] error in
-            if let error = error {
-                self?.errorMessage = "Save failed: \(error.localizedDescription)"
-            } else {
-                self?.errorMessage = nil
-                // Reset for next session
-                self?.currentSession = WorkoutSession()
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.errorMessage = "Save failed: \(error.localizedDescription)"
+                } else {
+                    self?.errorMessage = nil
+                    // Reset for next session
+                    self?.currentSession = WorkoutSession()
+                }
+                self?.isLoading = false
             }
-            self?.isLoading = false
         }
     }
     
+    /// Update an existing session (edit flow). Adjusts the profile XP by the
+    /// delta between the new computed XP and the previously-stored XP.
+    /// `completion` fires on the main queue with an error or nil.
+    func updateSession(_ edited: WorkoutSession, completion: @escaping (Error?) -> Void) {
+        guard let uid = userID, let sessionID = edited.id else {
+            completion(NSError(domain: "AGWorkout", code: 400,
+                               userInfo: [NSLocalizedDescriptionKey: "Missing session id."]))
+            return
+        }
+        guard edited.isValidForXP else {
+            completion(NSError(domain: "AGWorkout", code: 422,
+                               userInfo: [NSLocalizedDescriptionKey: "Need at least one valid exercise."]))
+            return
+        }
+
+        var updated = edited
+        let previousXP = edited.totalXP
+        let newXP = GameEngine.workoutXP(for: updated)
+        updated.totalXP = newXP
+        let xpDelta = newXP - previousXP
+
+        isLoading = true
+        let batch = db.batch()
+        let sessionRef = db.collection("users").document(uid).collection("workouts").document(sessionID)
+        do {
+            try batch.setData(from: updated, forDocument: sessionRef, merge: false)
+        } catch {
+            isLoading = false
+            completion(error); return
+        }
+        if xpDelta != 0 {
+            let profileRef = db.collection("users").document(uid)
+            batch.updateData(["xp": FieldValue.increment(Int64(xpDelta))], forDocument: profileRef)
+        }
+        batch.commit { [weak self] error in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                completion(error)
+            }
+        }
+    }
+
+    /// Delete a session and refund its XP from the profile.
+    func deleteSession(_ session: WorkoutSession) {
+        guard let uid = userID, let sessionID = session.id else { return }
+        let batch = db.batch()
+        let sessionRef = db.collection("users").document(uid).collection("workouts").document(sessionID)
+        batch.deleteDocument(sessionRef)
+
+        // Refund XP so leaderboard/level don't stay inflated.
+        let profileRef = db.collection("users").document(uid)
+        batch.updateData([
+            "xp": FieldValue.increment(Int64(-session.totalXP))
+        ], forDocument: profileRef)
+
+        batch.commit { [weak self] error in
+            DispatchQueue.main.async {
+                if let error {
+                    self?.errorMessage = "Delete failed: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
     //Function: Load workout history with real-time listener
     private func loadHistory(for uid: String) {
         let collectionRef = db.collection("users").document(uid).collection("workouts")
@@ -128,6 +204,13 @@ class WorkoutViewModel: ObservableObject {
     private func removeListener() {
         listener?.remove()
         listener = nil
+    }
+    
+    private func stopSavingIndicatorIfServerIsSlow() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            guard let self, self.isLoading else { return }
+            self.isLoading = false
+        }
     }
     
     deinit {
