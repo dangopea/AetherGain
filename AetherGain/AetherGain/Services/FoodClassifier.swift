@@ -50,23 +50,15 @@ enum FoodClassifier {
 
     private static func loadBundledModel() -> VNCoreMLModel? {
         let bundle = Bundle.main
-        // The resource is called AetherGainFoodModel, not FoodClassifier: a
-        // .mlmodel makes Xcode generate a Swift class named after the file, and
-        // "FoodClassifier" is already this enum — same name twice in one target
-        // fails the build with "Multiple commands produce FoodClassifier.stringsdata".
+        // Named AetherGainFoodModel, not FoodClassifier: a .mlmodel generates a
+        // Swift class after the file name, which would collide with this enum.
         let candidates: [URL?] = [
             bundle.url(forResource: "AetherGainFoodModel", withExtension: "mlmodelc"),
             bundle.url(forResource: "AetherGainFoodModel", withExtension: "mlmodel")
         ]
 
-        // Compute-unit selection. The Simulator has no Neural Engine and its
-        // Metal stack is a software emulation, so a model left on the default
-        // `.all` fails at request time with "Could not create inference
-        // context" even though the file loaded correctly. Restricting the
-        // Simulator to the CPU costs speed and changes nothing about the
-        // results. On a real device we still ask for `.all` first and only drop
-        // to the CPU if the GPU/ANE path refuses, so an older iPhone degrades
-        // instead of dead-ending.
+        // The Simulator has no Neural Engine and emulates Metal, so a model left
+        // on .all cannot build an inference context. Devices try .all first.
         let configurations: [MLComputeUnits] = {
             #if targetEnvironment(simulator)
             return [.cpuOnly]
@@ -106,11 +98,8 @@ enum FoodClassifier {
             return
         }
 
-        // A CGImage carries no orientation. A photograph taken in portrait is
-        // stored by the camera in landscape with an orientation flag, which
-        // lives on the UIImage and is lost the moment .cgImage is taken. Handing
-        // Vision the raw buffer therefore means classifying a sideways picture,
-        // and a sideways plate of food scores far worse than an upright one.
+        // .cgImage drops the orientation flag, so a portrait photograph would
+        // otherwise be classified sideways.
         let orientation = cgOrientation(from: image.imageOrientation)
 
         DispatchQueue.global(qos: .userInitiated).async {
@@ -183,29 +172,14 @@ enum FoodClassifier {
             try VNImageRequestHandler(cgImage: cgImage, orientation: orientation, options: [:]).perform([request])
             let all = request.results ?? []
 
-            // Apple ships calibrated precision/recall curves with the built-in
-            // classifier. `hasMinimumRecall(_:forPrecision:)` filters
-            // observations to those that would meet a chosen precision at the
-            // requested recall. Using the calibrated curve is dramatically
-            // better than a raw confidence threshold because different labels
-            // have wildly different confidence scales.
-            //
-            // We try three tiers so we always return something to the user:
-            //  1. High-precision labels (precision ≥ 0.7 at recall ≥ 0.5)
-            //  2. Fall back to precision ≥ 0.5 at recall ≥ 0.5
-            //  3. Fall back to the top-15 by raw confidence
+            // Apple ships calibrated precision/recall curves with this classifier, so
+            // hasMinimumRecall(_:forPrecision:) filters far better than a raw threshold.
             let strict = all.filter { $0.hasMinimumRecall(0.5, forPrecision: 0.7) }
             let medium = all.filter { $0.hasMinimumRecall(0.5, forPrecision: 0.5) }
 
-            // The tiers set the ORDER, they do not discard. An earlier version
-            // returned only the best non-empty tier, which could throw away the
-            // one label the macro table needs: Apple's taxonomy is hierarchical,
-            // so a photograph of a pizza yields both the general "food" and the
-            // specific "pizza", and the specific label is routinely the less
-            // precise of the two. Returning the strict tier alone therefore gave
-            // back "food" on its own, which matches nothing in FoodDatabase.
-            // Concatenating the tiers keeps the confident labels at the head
-            // while still offering the specific ones the matcher can use.
+            // The tiers set the order, they do not discard. Apple's taxonomy is
+            // hierarchical: a pizza yields both "food" and the less precise "pizza",
+            // and only the latter matches anything in the macro table.
             var ordered: [VNClassificationObservation] = []
             var seen = Set<String>()
             for tier in [strict, medium, all] {

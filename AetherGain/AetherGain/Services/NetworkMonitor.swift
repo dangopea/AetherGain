@@ -33,22 +33,8 @@ final class NetworkMonitor: ObservableObject {
         }
         monitor.start(queue: queue)
 
-        // Two safety nets behind the push handler.
-        //
-        // `pathUpdateHandler` is meant to fire on every transition, but it is
-        // not guaranteed to: a handler registered while the interface is
-        // already changing can miss the edge, and in the Simulator the handler
-        // watches the host Mac's interfaces rather than the device's, so a
-        // reconnection sometimes produces no callback at all. The offline
-        // banner would then stay on screen for the rest of the run even though
-        // the connection was back.
-        //
-        // 1. Every three seconds, compare the published state against
-        //    `monitor.currentPath`, which is a synchronous read of the current
-        //    status rather than a notification, and correct it if they differ.
-        // 2. Re-read it whenever the app returns to the foreground, because a
-        //    transition that happened while the app was suspended delivers no
-        //    callback on resume.
+        // pathUpdateHandler can miss a transition, and in the Simulator it watches
+        // the host Mac. Reconcile against currentPath on a timer and on foreground.
         pollTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.reconcile() }
         }

@@ -350,12 +350,8 @@ enum FoodDatabase {
         return nil
     }
 
-    /// Word-boundary aware scoring. A label only scores for a food when the
-    /// food's name or one of its aliases appears as a **whole word sequence**
-    /// in the label, or as a single token. The previous version used plain
-    /// substring containment in both directions, which produced false hits
-    /// such as "steak" matching the alias "tea", "peach" matching "pea" and
-    /// "hamburger" matching "ham".
+    /// Word-boundary scoring. Plain substring containment matched "steak"
+    /// against the alias "tea" and "hamburger" against "ham".
     private static func containsPhrase(_ haystack: String, _ needle: String) -> Bool {
         guard !needle.isEmpty else { return false }
         return (" " + haystack + " ").contains(" " + needle + " ")
@@ -394,10 +390,8 @@ enum FoodDatabase {
                     continue
                 }
 
-                // 3. An alias appears as a whole word sequence, or a single
-                //    token of the label is exactly an alias. This is what
-                //    rescues Apple's multi-word labels such as
-                //    "hot dog stand" -> "hot dog".
+                // 3. An alias as a whole word sequence, or a single token that is exactly
+                //    an alias. This rescues multi-word labels such as "hot dog stand".
                 var aliasHit: Float = 0
                 for alias in food.aliases {
                     if containsPhrase(lower, alias) {

@@ -26,36 +26,15 @@ class LeaderboardViewModel: ObservableObject {
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
 
-    /// Firestore refuses a query that filters on one field and orders by
-    /// another unless a composite index for exactly that pair exists. The
-    /// ordered form is the one worth having — the database sorts, and only the
-    /// top 25 documents cross the network — but it is useless if the index is
-    /// absent, because the query does not run slowly, it fails outright.
+    /// Filtering on one field while ordering by another needs a composite index;
+    /// without it the query fails outright instead of running slowly. The ordered
+    /// form is attempted first, and a code 9 reply swaps in an unordered query
+    /// sorted in the app, which downloads 50 documents to show 25.
     ///
-    /// So both forms are implemented. The ordered query is attempted first; a
-    /// FAILED_PRECONDITION reply (code 9, which is Firestore's way of saying
-    /// "no such index") swaps in an unordered query that is sorted in the app
-    /// instead. The fallback costs more: it downloads up to 50 documents to
-    /// show 25, and the sorting work moves onto the phone. That is an
-    /// acceptable price for a leaderboard of this size and a bad one for a
-    /// large user base, which is precisely why it is the fallback and not the
-    /// default.
-    ///
-    /// Both forms also have to satisfy the same Firestore Security Rule, and
-    /// the rule bounds the page size, so its bound must be the larger of the
-    /// two the app can ask for:
-    ///
-    ///     match /users/{userId} {
-    ///       allow get, create, update, delete: if request.auth != null
-    ///                                          && request.auth.uid == userId;
-    ///       allow list: if request.auth != null
-    ///                   && request.query.limit <= 50
-    ///                   && resource.data.sharesToLeaderboard == true;
-    ///     }
-    ///
-    /// A rule written for 25 would permit the ordered query and silently refuse
-    /// the fallback, which is the worst possible outcome: the feature would
-    /// work until the day the index was missing.
+    /// Matching rule — its bound must cover the larger of the two queries:
+    ///     allow list: if request.auth != null
+    ///                 && request.query.limit <= 50
+    ///                 && resource.data.sharesToLeaderboard == true;
     private static let missingIndexCode = 9   // FirestoreErrorCode.failedPrecondition
 
     func loadLeaderboard() {
@@ -80,11 +59,8 @@ class LeaderboardViewModel: ObservableObject {
             guard let self else { return }
 
             if let error {
-                // The full error, not just its sentence. A Firestore failure
-                // carries a numeric code that says which of three very
-                // different things went wrong: 7 is a security rule refusing
-                // the read, 9 is a missing composite index, 16 is an expired
-                // sign-in. They look alike on screen and need opposite fixes.
+                // The numeric code separates three look-alike failures: 7 a security rule,
+                // 9 a missing composite index, 16 an expired sign-in.
                 let ns = error as NSError
                 print("[Leaderboard] ERROR domain=\(ns.domain) code=\(ns.code): \(ns.localizedDescription)")
 
@@ -105,10 +81,8 @@ class LeaderboardViewModel: ObservableObject {
             guard let snapshot else { return }
             let documents = snapshot.documents
 
-            // Which copy of the data this is matters: Firestore answers every
-            // listener from the on-disk cache first and from the server a
-            // moment later. A list that appears and then empties means the
-            // two disagree, and only the second one is authoritative.
+            // Firestore answers from the cache first and from the server a moment
+            // later; only the second is authoritative.
             print("[Leaderboard] snapshot fromCache=\(snapshot.metadata.isFromCache) "
                   + "ordered=\(orderedByServer) docs=\(documents.count)")
 

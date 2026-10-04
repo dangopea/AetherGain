@@ -62,15 +62,8 @@ class ProfileViewModel: ObservableObject {
                 return
             }
             
-            // Two very different situations were handled by one branch here, and
-            // conflating them could destroy data. `try?` turns a decoding failure
-            // into the same `nil` as a missing document, so a single unreadable
-            // field — an enum whose stored text no longer matches a case, a
-            // number written as a string — made the app conclude that the user
-            // had no profile and overwrite the real one with blank defaults,
-            // taking the XP and the leaderboard opt-in with it. Absence is now
-            // asked of the snapshot itself, and a decoding failure is reported
-            // rather than acted upon.
+            // try? made a decode failure look like a missing document, and the else
+            // branch overwrites the real profile. Absence now comes from snapshot.exists.
             guard let snapshot else { self.isLoading = false; return }
 
             if snapshot.exists {
@@ -102,11 +95,8 @@ class ProfileViewModel: ObservableObject {
         let docRef = db.collection("users").document(uid)
         
         do {
-            // merge: true leaves fields this model does not know about in place.
-            // Without it every save rewrites the whole document, so a field
-            // another part of the app owns — the XP that completeSession raises
-            // with an atomic increment — would be silently removed by someone
-            // merely editing their name.
+            // merge: true keeps fields this model does not own, such as the xp that
+            // completeSession raises with an atomic increment.
             try docRef.setData(from: profile, merge: true) { [weak self] error in
                 DispatchQueue.main.async {
                     if let error = error {

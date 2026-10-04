@@ -101,12 +101,8 @@ class AuthViewModel: ObservableObject {
         
         inactivityTimer = Timer.scheduledTimer(withTimeInterval: inactivityTimeout, repeats: false) { [weak self] _ in
             guard let self else { return }
-            // Order matters. signOut() flips isSignedIn, which swaps the root
-            // view from MainTabView to LoginView. The "Session expired" alert
-            // lives on LoginView, so raising the flag in the same run loop
-            // means LoginView is built with it already true and SwiftUI never
-            // sees the false -> true change. Deferring by one tick lets
-            // LoginView mount first, then the alert animates in.
+            // signOut() swaps the root view to LoginView, where the alert lives, so the
+            // flag must be raised one run loop later or SwiftUI never sees the change.
             self.signOut()
             DispatchQueue.main.async { self.showTimeoutAlert = true }
         }

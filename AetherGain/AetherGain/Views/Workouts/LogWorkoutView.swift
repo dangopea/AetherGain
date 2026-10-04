@@ -377,16 +377,9 @@ struct LogWorkoutView: View {
                 let xpForToast = estimatedXP
                 workoutVM.completeSession()
                 authVM.userDidInteract()
-                // Feedback is raised on the validation result, not on a server
-                // acknowledgement. `completeSession()` sets `errorMessage`
-                // synchronously when a guard rejects the session, and hands the
-                // batch to Firestore otherwise. Firestore's own completion
-                // handler only fires once the server has acknowledged the
-                // write, so waiting for it would mean no confirmation at all
-                // while offline — exactly the case success criterion 9 is
-                // about. Waiting on `history.count` was worse still: the
-                // listener often needs longer than the 0.4 s this code allowed,
-                // so a successful save silently produced nothing.
+                // Feedback follows the validation result, not the server: Firestore's
+                // completion handler only fires on acknowledgement, so offline there
+                // would be none at all.
                 if let msg = workoutVM.errorMessage {
                     AGToastCenter.shared.show(msg, kind: .error)
                 } else {
