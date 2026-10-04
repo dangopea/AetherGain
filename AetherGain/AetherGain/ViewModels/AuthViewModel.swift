@@ -20,7 +20,7 @@ class AuthViewModel: ObservableObject {
     @Published var showTimeoutAlert = false //Triggers "Session expired" notificatoin
     
     private var inactivityTimer: Timer? //Timer to count down 30 minutes of inactivity
-    private let inactivityTimeout: TimeInterval = 30 * 60 // Duration of inactivity | 1800 seconds is 30 minutes
+    private let inactivityTimeout: TimeInterval = 30*60 // Duration of inactivity | 1800 seconds is 30 minutes
     
     //Initialization of the view model + setup of FireBase auth state listener
     init() {
@@ -100,8 +100,15 @@ class AuthViewModel: ObservableObject {
         stopInactivityTimer() // Stop any timer that's already running
         
         inactivityTimer = Timer.scheduledTimer(withTimeInterval: inactivityTimeout, repeats: false) { [weak self] _ in
-            self?.signOut()
-            self?.showTimeoutAlert = true
+            guard let self else { return }
+            // Order matters. signOut() flips isSignedIn, which swaps the root
+            // view from MainTabView to LoginView. The "Session expired" alert
+            // lives on LoginView, so raising the flag in the same run loop
+            // means LoginView is built with it already true and SwiftUI never
+            // sees the false -> true change. Deferring by one tick lets
+            // LoginView mount first, then the alert animates in.
+            self.signOut()
+            DispatchQueue.main.async { self.showTimeoutAlert = true }
         }
     }
     
