@@ -374,17 +374,24 @@ struct LogWorkoutView: View {
                 isEnabled: workoutVM.currentSession.isValidForXP,
                 isLoading: workoutVM.isLoading
             ) {
-                let priorHistoryCount = workoutVM.history.count
+                let xpForToast = estimatedXP
                 workoutVM.completeSession()
                 authVM.userDidInteract()
-                // Wait a tick for save to complete before celebrating.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    if workoutVM.errorMessage == nil && workoutVM.history.count > priorHistoryCount {
-                        AGToastCenter.shared.show("Workout logged! +\(estimatedXP) XP earned",
-                                                  kind: .success, celebrate: true)
-                    } else if let msg = workoutVM.errorMessage {
-                        AGToastCenter.shared.show(msg, kind: .error)
-                    }
+                // Feedback is raised on the validation result, not on a server
+                // acknowledgement. `completeSession()` sets `errorMessage`
+                // synchronously when a guard rejects the session, and hands the
+                // batch to Firestore otherwise. Firestore's own completion
+                // handler only fires once the server has acknowledged the
+                // write, so waiting for it would mean no confirmation at all
+                // while offline — exactly the case success criterion 9 is
+                // about. Waiting on `history.count` was worse still: the
+                // listener often needs longer than the 0.4 s this code allowed,
+                // so a successful save silently produced nothing.
+                if let msg = workoutVM.errorMessage {
+                    AGToastCenter.shared.show(msg, kind: .error)
+                } else {
+                    AGToastCenter.shared.show("Workout logged! +\(xpForToast) XP earned",
+                                              kind: .success, celebrate: true)
                 }
             }
         }

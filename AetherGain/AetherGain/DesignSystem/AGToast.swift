@@ -100,6 +100,21 @@ struct AGToastHost: View {
     }
 }
 
+// MARK: - Presenting the toast above a sheet
+
+extension View {
+    /// Mounts a toast layer on top of this view.
+    ///
+    /// `AGToastHost` sits in the app's root `ZStack`, which covers every screen
+    /// reached by a tab or a navigation push. A `.sheet`, however, is presented
+    /// in its own layer *above* the whole root view, so a toast raised while a
+    /// sheet is open renders behind it and is never seen. Every sheet that
+    /// reports success or failure therefore carries its own toast layer.
+    func agToastLayer() -> some View {
+        overlay(alignment: .top) { AGToastHost() }
+    }
+}
+
 // MARK: - Confetti
 
 struct AGConfettiView: View {

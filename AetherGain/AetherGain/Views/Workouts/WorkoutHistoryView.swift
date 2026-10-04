@@ -79,6 +79,7 @@ struct WorkoutHistoryView: View {
         .background(AGColor.canvas.ignoresSafeArea())
         .sheet(item: $sessionToEdit) { session in
             WorkoutEditSheet(session: session, workoutVM: workoutVM)
+                .agToastLayer()
         }
         .alert("Delete workout?", isPresented: Binding(
             get: { sessionToDelete != nil },

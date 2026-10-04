@@ -40,6 +40,7 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showTargetsOnboarding) {
             TargetsOnboardingView(onDone: { showTargetsOnboarding = false })
+                .agToastLayer()
         }
         .onAppear { authVM.userDidInteract() }
     }

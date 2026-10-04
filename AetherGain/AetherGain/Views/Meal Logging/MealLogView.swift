@@ -82,7 +82,7 @@ struct MealLogView: View {
                     .foregroundColor(AGColor.amber)
             }
         }
-        .sheet(isPresented: $showLogSheet) { logSheet }
+        .sheet(isPresented: $showLogSheet) { logSheet.agToastLayer() }
         .onAppear { authVM.userDidInteract() }
     }
 
