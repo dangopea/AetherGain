@@ -1,0 +1,23 @@
+<mxfile host="app.diagrams.net"><diagram name="DFD Level 0 Context" id="DFD Level 0 Context"><mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/>
+<mxCell id="n3" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="260" width="140" height="90" as="geometry"/></mxCell>
+<mxCell id="n4" value="AetherGain
+iOS App" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1"><mxGeometry x="400" y="270" width="220" height="80" as="geometry"/></mxCell>
+<mxCell id="n5" value="Firebase Auth" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;boundedLbl=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="800" y="60" width="200" height="60" as="geometry"/></mxCell>
+<mxCell id="n6" value="Firestore Database" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;boundedLbl=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="800" y="180" width="200" height="60" as="geometry"/></mxCell>
+<mxCell id="n7" value="Firebase Storage" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;boundedLbl=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="800" y="300" width="200" height="60" as="geometry"/></mxCell>
+<mxCell id="n8" value="OpenFoodFacts API" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;boundedLbl=1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="800" y="420" width="200" height="60" as="geometry"/></mxCell>
+<mxCell id="n9" value="Apple Vision Framework" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=12;" vertex="1" parent="1"><mxGeometry x="800" y="540" width="200" height="60" as="geometry"/></mxCell>
+<mxCell id="n10" value="credentials, profile info,
+workouts, meals, habits, photos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="n3" target="n4"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n11" value="rendered UI, XP, badges,
+charts, reminders" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="n4" target="n3"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n12" value="auth tokens" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="n4" target="n5"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="n5" target="n4"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n14" value="read / write / listen" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="n4" target="n6"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n15" value="upload avatar JPEG" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="n4" target="n7"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n16" value="download URL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="n7" target="n4"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n17" value="food name search" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="n4" target="n8"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n18" value="product w/ nutriments" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="n8" target="n4"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n19" value="CGImage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="n4" target="n9"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="n20" value="classification observations" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;dashed=1;" edge="1" parent="1" source="n9" target="n4"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root></mxGraphModel></diagram></mxfile>
