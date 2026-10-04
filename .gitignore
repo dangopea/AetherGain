@@ -60,3 +60,29 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# ---------------------------------------------------------------------------
+# AetherGain — project-specific
+# ---------------------------------------------------------------------------
+
+# macOS folder metadata
+.DS_Store
+
+# Local tooling configuration
+.claude/
+
+# Timestamped copies kept while refactoring; the history below is the record
+_backups/
+
+# Working notes and regenerated figures for the IA write-up. These are rebuilt
+# from the source, and the PNGs would otherwise accumulate in history on every
+# regeneration.
+Claude outputs/
+
+# Training images. 522 of the 655 come from a licensed third-party dataset and
+# must not be redistributed, and the 133 own photographs are ~59 MB of PNGs
+# that would stay in this repository's history permanently. MLTraining/README.md,
+# prepare_dataset.py and check_dataset.py describe how to rebuild the set, and
+# the trained model itself is committed.
+AetherGain/MLTraining/Training/
+AetherGain/MLTraining/archive/
