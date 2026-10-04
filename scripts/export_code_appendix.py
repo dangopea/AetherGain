@@ -82,11 +82,10 @@ SKIP_FILE_NAMES: set[str] = {
 }
 
 # File extensions to INCLUDE.
+# Swift-only by default — the code appendix is for the iOS app source.
+# Add ".py" or ".md" if you ever want the Python analysis / docs bundled too.
 INCLUDE_EXTS: set[str] = {
-    ".swift",   # Your code
-    ".py",      # Python analysis script
-    ".md",      # IA docs
-    ".rules",   # Firestore security rules if present
+    ".swift",
 }
 
 
