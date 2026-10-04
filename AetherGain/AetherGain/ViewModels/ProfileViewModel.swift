@@ -62,13 +62,27 @@ class ProfileViewModel: ObservableObject {
                 return
             }
             
-            if let data = snapshot?.data(),
-               let loadedProfile = try? snapshot?.data(as: UserProfile.self) {
-                self.profile = loadedProfile
-            } else { // No profile exists yet – create empty one
+            // Two very different situations were handled by one branch here, and
+            // conflating them could destroy data. `try?` turns a decoding failure
+            // into the same `nil` as a missing document, so a single unreadable
+            // field — an enum whose stored text no longer matches a case, a
+            // number written as a string — made the app conclude that the user
+            // had no profile and overwrite the real one with blank defaults,
+            // taking the XP and the leaderboard opt-in with it. Absence is now
+            // asked of the snapshot itself, and a decoding failure is reported
+            // rather than acted upon.
+            guard let snapshot else { self.isLoading = false; return }
 
+            if snapshot.exists {
+                do {
+                    self.profile = try snapshot.data(as: UserProfile.self)
+                } catch {
+                    self.errorMessage = "Your profile could not be read. Nothing was changed."
+                    print("[Profile] decode failed, document left untouched: \(error)")
+                }
+            } else {
                 self.profile = UserProfile()
-                self.saveProfile()  // Auto-creates document in Firestore
+                self.saveProfile()  // First sign-in: create the document.
             }
             
             self.isLoading = false
@@ -88,7 +102,12 @@ class ProfileViewModel: ObservableObject {
         let docRef = db.collection("users").document(uid)
         
         do {
-            try docRef.setData(from: profile) { [weak self] error in
+            // merge: true leaves fields this model does not know about in place.
+            // Without it every save rewrites the whole document, so a field
+            // another part of the app owns — the XP that completeSession raises
+            // with an atomic increment — would be silently removed by someone
+            // merely editing their name.
+            try docRef.setData(from: profile, merge: true) { [weak self] error in
                 DispatchQueue.main.async {
                     if let error = error {
                         self?.errorMessage = "Save error: \(error.localizedDescription)"
