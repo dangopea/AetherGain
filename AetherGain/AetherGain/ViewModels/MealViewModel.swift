@@ -42,6 +42,9 @@ class MealViewModel: ObservableObject {
     @Published var isAnalyzingPhoto = false
     @Published var errorMessage: String?
     @Published var candidates: [FoodCandidate] = []
+    /// One entry per food found in a multi-region scan of the photo.
+    /// Empty unless `analyzeMealPhotoByRegion` was used.
+    @Published var regionCandidates: [RegionCandidate] = []
     @Published var referenceHint: String? = nil
 
     /// If we're editing an existing meal, its Firestore id sits here so save()
@@ -418,7 +421,9 @@ class MealViewModel: ObservableObject {
         return amount * food.defaultServingG
     }
 
-    private func applyFood(_ food: FoodMacros) {
+    /// Not private: the multi-region flow in MealViewModelRegions.swift calls
+    /// it, and `private` in Swift does not reach an extension in another file.
+    func applyFood(_ food: FoodMacros) {
         currentMeal.foodName = food.name
         currentMeal.per100gCalories = food.calories
         currentMeal.per100gProtein  = food.protein
