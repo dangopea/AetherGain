@@ -86,3 +86,9 @@ Claude outputs/
 # the trained model itself is committed.
 AetherGain/MLTraining/Training/
 AetherGain/MLTraining/archive/
+
+# Private keys must never enter the repository
+ssh_key*
+*.pem
+id_ed25519*
+id_rsa*
