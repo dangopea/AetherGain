@@ -101,7 +101,7 @@ class MealViewModel: ObservableObject {
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self else { return }
                 if let error {
-                    DispatchQueue.main.async { self.errorMessage = error.localizedDescription }
+                    DispatchQueue.main.async { self.errorMessage = "Couldn't load your meals. Check your connection and reopen this screen." }
                     return
                 }
                 let meals = snapshot?.documents.compactMap { try? $0.data(as: MealEntry.self) } ?? []
@@ -111,7 +111,7 @@ class MealViewModel: ObservableObject {
 
     func saveMeal() {
         guard let uid = userID else {
-            DispatchQueue.main.async { self.errorMessage = "Not logged in" }
+            DispatchQueue.main.async { self.errorMessage = "You're signed out. Sign in again to continue." }
             return
         }
         guard !currentMeal.foodName.trimmingCharacters(in: .whitespaces).isEmpty else {
@@ -140,7 +140,7 @@ class MealViewModel: ObservableObject {
                 guard let self else { return }
                 DispatchQueue.main.async {
                     if let error {
-                        self.errorMessage = error.localizedDescription
+                        self.errorMessage = "Couldn't save this meal. Check your connection and tap Log again."
                     } else {
                         self.errorMessage = nil
                         self.resetCurrentMeal()
@@ -150,7 +150,7 @@ class MealViewModel: ObservableObject {
             }
         } catch {
             DispatchQueue.main.async {
-                self.errorMessage = error.localizedDescription
+                self.errorMessage = "This meal couldn't be prepared for saving. Check the food name and amount."
                 self.isLoading = false
             }
         }
@@ -200,7 +200,7 @@ class MealViewModel: ObservableObject {
             case .failure(let error):
                 DispatchQueue.main.async {
                     self.isAnalyzingPhoto = false
-                    self.errorMessage = "Photo analysis failed: \(error.localizedDescription)"
+                    self.errorMessage = "That photo couldn't be analysed. Take another one in better light, or enter the food by hand."
                 }
             case .success(let classified):
                 let labelsAndConfs = classified.map { ($0.label, $0.confidence) }
@@ -490,7 +490,7 @@ class MealViewModel: ObservableObject {
             DispatchQueue.main.async { self.isLoading = false }
             if let error {
                 DispatchQueue.main.async {
-                    self.errorMessage = "Nutrition lookup failed: \(error.localizedDescription)"
+                    self.errorMessage = "Couldn't reach the food database. Check your connection, or enter the macros by hand."
                 }
                 return
             }

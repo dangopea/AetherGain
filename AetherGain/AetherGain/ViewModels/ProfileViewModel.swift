@@ -57,7 +57,7 @@ class ProfileViewModel: ObservableObject {
             guard let self = self else { return }
             
             if let error = error {
-                self.errorMessage = "Load error: \(error.localizedDescription)"
+                self.errorMessage = "Couldn't load your profile. Check your connection and reopen this screen."
                 self.isLoading = false
                 return
             }
@@ -85,7 +85,7 @@ class ProfileViewModel: ObservableObject {
     //Function: Save current profile to Firestore
     func saveProfile() {
         guard let uid = userID else {
-            errorMessage = "Not logged in"
+            errorMessage = "You're signed out. Sign in again to continue."
             return
         }
         
@@ -100,7 +100,7 @@ class ProfileViewModel: ObservableObject {
             try docRef.setData(from: profile, merge: true) { [weak self] error in
                 DispatchQueue.main.async {
                     if let error = error {
-                        self?.errorMessage = "Save error: \(error.localizedDescription)"
+                        self?.errorMessage = "Couldn't save your profile. Check your connection and tap Save again."
                     } else {
                         self?.errorMessage = nil
                     }
@@ -108,7 +108,7 @@ class ProfileViewModel: ObservableObject {
                 }
             }
         } catch {
-            errorMessage = "Encoding error: \(error.localizedDescription)"
+            errorMessage = "Your profile couldn't be prepared for saving. Check the text fields for unusual characters."
             isLoading = false
         }
     }

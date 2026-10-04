@@ -32,7 +32,7 @@ class HabitsViewModel: ObservableObject {
         
         listener = ref.addSnapshotListener { [weak self] snapshot, error in
             if let error {
-                self?.errorMessage = error.localizedDescription
+                self?.errorMessage = "Couldn't load your habits. Check your connection and reopen this screen."
                 return
             }
             if let loaded = try? snapshot?.data(as: UserProfile.self) {
@@ -44,7 +44,7 @@ class HabitsViewModel: ObservableObject {
     func saveHabits() {
         guard let uid = userID else {
             DispatchQueue.main.async {
-                self.errorMessage = "Not logged in"
+                self.errorMessage = "You're signed out. Sign in again to continue."
                 self.isLoading = false
             }
             return
@@ -61,7 +61,7 @@ class HabitsViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     if let error {
-                        self.errorMessage = error.localizedDescription
+                        self.errorMessage = "Couldn't save your habits. Check your connection and tap Save again."
                     } else {
                         self.errorMessage = nil
                     }
@@ -70,7 +70,7 @@ class HabitsViewModel: ObservableObject {
             }
         } catch {
             DispatchQueue.main.async {
-                self.errorMessage = error.localizedDescription
+                self.errorMessage = "Your habits couldn't be prepared for saving. Check the custom habit name."
                 self.isLoading = false
             }
         }

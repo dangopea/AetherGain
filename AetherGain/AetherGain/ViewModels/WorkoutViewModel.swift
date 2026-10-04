@@ -64,7 +64,7 @@ class WorkoutViewModel: ObservableObject {
     //Function: Complete session [calculate XP, save session, add XP to profile]
     func completeSession() {
         guard let uid = userID else {
-            errorMessage = "Not logged in"
+            errorMessage = "You're signed out. Sign in again to continue."
             return
         }
         
@@ -94,7 +94,7 @@ class WorkoutViewModel: ObservableObject {
         do {
             try batch.setData(from: currentSession, forDocument: sessionRef)
         } catch {
-            errorMessage = "Encoding error: \(error.localizedDescription)"
+            errorMessage = "This workout couldn't be prepared for saving. Check the exercise names and try again."
             isLoading = false
             return
         }
@@ -109,7 +109,7 @@ class WorkoutViewModel: ObservableObject {
         batch.commit { [weak self] error in
             DispatchQueue.main.async {
                 if let error = error {
-                    self?.errorMessage = "Save failed: \(error.localizedDescription)"
+                    self?.errorMessage = "Couldn't save your workout. Check your connection and tap Complete again."
                 } else {
                     self?.errorMessage = nil
                     // Reset for next session
@@ -178,7 +178,7 @@ class WorkoutViewModel: ObservableObject {
         batch.commit { [weak self] error in
             DispatchQueue.main.async {
                 if let error {
-                    self?.errorMessage = "Delete failed: \(error.localizedDescription)"
+                    self?.errorMessage = "Couldn't delete that session. Check your connection and try again."
                 }
             }
         }
@@ -192,7 +192,7 @@ class WorkoutViewModel: ObservableObject {
             .order(by: "date", descending: true)
             .addSnapshotListener { [weak self] snapshot, error in
                 if let error = error {
-                    self?.errorMessage = "Load error: \(error.localizedDescription)"
+                    self?.errorMessage = "Couldn't load your history. Pull down to refresh once you're back online."
                     return
                 }
                 

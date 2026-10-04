@@ -31,7 +31,7 @@ extension MealViewModel {
                 self.isAnalyzingPhoto = false
                 switch result {
                 case .failure(let error):
-                    self.errorMessage = "Photo analysis failed: \(error.localizedDescription)"
+                    self.errorMessage = "That photo couldn't be analysed. Take another one in better light, or enter the food by hand."
                 case .success(let regions):
                     let recognised = regions.filter { $0.matchedFood != nil }
                     self.regionCandidates = regions

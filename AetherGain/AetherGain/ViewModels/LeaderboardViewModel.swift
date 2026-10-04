@@ -72,7 +72,7 @@ class LeaderboardViewModel: ObservableObject {
 
                 DispatchQueue.main.async {
                     self.users = []
-                    self.errorMessage = error.localizedDescription
+                    self.errorMessage = "The leaderboard couldn't load. Check your connection and open it again."
                     self.rulesHint = nil
                 }
                 return
