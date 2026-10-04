@@ -350,20 +350,68 @@ enum FoodDatabase {
         return nil
     }
 
+    /// Word-boundary aware scoring. A label only scores for a food when the
+    /// food's name or one of its aliases appears as a **whole word sequence**
+    /// in the label, or as a single token. The previous version used plain
+    /// substring containment in both directions, which produced false hits
+    /// such as "steak" matching the alias "tea", "peach" matching "pea" and
+    /// "hamburger" matching "ham".
+    private static func containsPhrase(_ haystack: String, _ needle: String) -> Bool {
+        guard !needle.isEmpty else { return false }
+        return (" " + haystack + " ").contains(" " + needle + " ")
+    }
+
+    /// Minimum score a candidate must reach before it is accepted. Below this
+    /// the caller receives `nil` and the user is asked to enter the food by
+    /// hand, which is preferable to silently logging the wrong macros.
+    static let minimumMatchScore: Float = 0.08
+
     static func bestMatch(fromLabels labels: [(label: String, confidence: Float)]) -> FoodMacros? {
         var scores: [String: Float] = [:]
-        for (label, conf) in labels {
-            let lower = label.lowercased()
+
+        for (rawLabel, conf) in labels {
+            let lower = rawLabel
+                .lowercased()
+                .replacingOccurrences(of: "_", with: " ")
+                .replacingOccurrences(of: "-", with: " ")
+                .trimmingCharacters(in: .whitespaces)
+            if lower.isEmpty { continue }
+
+            let tokens = Set(lower.split(separator: " ").map(String.init))
+
             for food in all {
-                for alias in food.aliases where lower.contains(alias) || alias.contains(lower) {
-                    scores[food.name, default: 0] += conf
+                let foodNameLower = food.name.lowercased()
+
+                // 1. The whole label is exactly the food name or an alias.
+                if lower == foodNameLower || food.aliases.contains(lower) {
+                    scores[food.name, default: 0] += conf * 3
+                    continue
                 }
-                if lower.contains(food.name.lowercased()) {
-                    scores[food.name, default: 0] += conf
+
+                // 2. The food name appears as a whole word sequence.
+                if containsPhrase(lower, foodNameLower) {
+                    scores[food.name, default: 0] += conf * 2
+                    continue
                 }
+
+                // 3. An alias appears as a whole word sequence, or a single
+                //    token of the label is exactly an alias. This is what
+                //    rescues Apple's multi-word labels such as
+                //    "hot dog stand" -> "hot dog".
+                var aliasHit: Float = 0
+                for alias in food.aliases {
+                    if containsPhrase(lower, alias) {
+                        aliasHit = max(aliasHit, conf)
+                    } else if tokens.contains(alias) {
+                        aliasHit = max(aliasHit, conf * 0.8)
+                    }
+                }
+                if aliasHit > 0 { scores[food.name, default: 0] += aliasHit }
             }
         }
-        guard let winner = scores.max(by: { $0.value < $1.value })?.key else { return nil }
-        return all.first { $0.name == winner }
+
+        guard let best = scores.max(by: { $0.value < $1.value }),
+              best.value >= minimumMatchScore else { return nil }
+        return all.first { $0.name == best.key }
     }
 }
