@@ -13,6 +13,9 @@ struct LeaderboardView: View {
         ScrollView {
             VStack(spacing: 14) {
                 header
+                if let error = leaderboardVM.errorMessage {
+                    hintCard("Leaderboard could not load: " + error)
+                }
                 if let hint = leaderboardVM.rulesHint {
                     hintCard(hint)
                 }
