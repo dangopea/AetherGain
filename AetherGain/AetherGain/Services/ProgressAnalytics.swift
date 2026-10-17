@@ -1,17 +1,17 @@
-//
-//  ProgressAnalytics.swift
-//  AetherGain
-//
-//  Criterion 8: dynamic weekly aggregates for XP, workouts, macros, habits.
-//  Also provides CSV export used both from the app and by the Python analysis script.
-//
+
+
+
+
+
+
+
 
 import Foundation
 
 struct DailyStat: Identifiable {
     let id = UUID()
-    let day: Date          // startOfDay
-    let dayLabel: String   // "Mon"
+    let day: Date
+    let dayLabel: String
     let xp: Int
     let workouts: Int
     let calories: Double
@@ -69,12 +69,12 @@ enum ProgressAnalytics {
         }
     }
 
-    // MARK: - 12-week activity heatmap
+
 
     struct HeatmapCell: Identifiable {
         var id: Date { day }
         let day: Date
-        let intensity: Double   // 0...1 (workout XP normalised)
+        let intensity: Double
     }
 
     static func heatmap(workouts: [WorkoutSession],
@@ -85,7 +85,7 @@ enum ProgressAnalytics {
         let totalDays = weeks * 7
         let start = cal.date(byAdding: .day, value: -(totalDays - 1), to: today) ?? today
 
-        // Bucket workouts by day.
+
         var xpByDay: [Date: Int] = [:]
         for w in workouts {
             let d = cal.startOfDay(for: w.date)
@@ -104,7 +104,7 @@ enum ProgressAnalytics {
         return cells
     }
 
-    // MARK: - CSV export
+
 
     static func csv(from stats: [DailyStat]) -> String {
         var lines = ["date,day,xp,workouts,calories,protein_g,carbs_g,fat_g,water_ml,sleep_hours,habit_done"]
@@ -129,9 +129,9 @@ enum ProgressAnalytics {
         return lines.joined(separator: "\n")
     }
 
-    /// Writes the CSV into the app's Documents directory (survives past the
-    /// ShareSheet dismiss + can be re-shared or picked up by Files.app).
-    /// Falls back to tmp if Documents is unavailable.
+
+
+
     static func writeCSVToTemp(_ csv: String, name: String = "aethergain_weekly.csv") -> URL? {
         let fm = FileManager.default
         let base: URL
@@ -140,7 +140,7 @@ enum ProgressAnalytics {
         } else {
             base = fm.temporaryDirectory
         }
-        // Filename with a timestamp so each export shows up separately.
+
         let timestamp = ISO8601DateFormatter().string(from: Date())
             .replacingOccurrences(of: ":", with: "-")
         let final = "aethergain_weekly_\(timestamp).csv"

@@ -1,9 +1,9 @@
-//
-//  AGToast.swift
-//  AetherGain
-//
-//  App-wide toast + confetti for Criterion 10 (success/error feedback).
-//
+
+
+
+
+
+
 
 import SwiftUI
 import Combine
@@ -100,18 +100,18 @@ struct AGToastHost: View {
     }
 }
 
-// MARK: - Presenting the toast above a sheet
+
 
 extension View {
-    /// Mounts a toast layer on this view. A `.sheet` is presented above the root
-    /// `ZStack` where `AGToastHost` lives, so a toast raised from a sheet would
-    /// otherwise render behind it.
+
+
+
     func agToastLayer() -> some View {
         overlay(alignment: .top) { AGToastHost() }
     }
 }
 
-// MARK: - Confetti
+
 
 struct AGConfettiView: View {
     private let pieces: [ConfettiPiece] = (0..<40).map { _ in

@@ -1,9 +1,9 @@
-//
-//  HabitsViewModel.swift
-//  AetherGain
-//
-//  Created by Dhriti on 3/13/2569 BE.
-//
+
+
+
+
+
+
 
 import Foundation
 import FirebaseFirestore
@@ -16,22 +16,22 @@ class HabitsViewModel: ObservableObject {
     @Published var profile: UserProfile = UserProfile()
     @Published var isLoading = false
     @Published var errorMessage: String?
-    
+
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
-    
+
     private var userID: String? { Auth.auth().currentUser?.uid }
-    
+
     init() {
         loadProfile()
     }
-    
+
     func loadProfile() {
         guard let uid = userID else { return }
         let ref = db.collection("users").document(uid)
-        
+
         listener = ref.addSnapshotListener { [weak self] snapshot, error in
-            if let error {
+            if error != nil {
                 self?.errorMessage = "Couldn't load your habits. Check your connection and reopen this screen."
                 return
             }
@@ -40,7 +40,7 @@ class HabitsViewModel: ObservableObject {
             }
         }
     }
-    
+
     func saveHabits() {
         guard let uid = userID else {
             DispatchQueue.main.async {
@@ -50,7 +50,7 @@ class HabitsViewModel: ObservableObject {
             return
         }
 
-        // Compute streak/XP FIRST so a single write persists everything.
+
         applyStreakChange()
 
         isLoading = true
@@ -60,7 +60,7 @@ class HabitsViewModel: ObservableObject {
             try ref.setData(from: profile, merge: true) { [weak self] error in
                 DispatchQueue.main.async {
                     guard let self = self else { return }
-                    if let error {
+                    if error != nil {
                         self.errorMessage = "Couldn't save your habits. Check your connection and tap Save again."
                     } else {
                         self.errorMessage = nil
@@ -76,11 +76,11 @@ class HabitsViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Streak & XP Logic
-    /// Only positive events touch the streak. We never reset the streak because
-    /// "today's targets aren't done yet" — that's just an in-progress day.
-    /// Resets only happen when we detect a *missed* day (>1 day gap when we
-    /// hit all targets again).
+
+
+
+
+
     private func applyStreakChange() {
         let allDoneToday = waterHitToday && sleepHitToday && profile.customHabitCompletedToday
         guard allDoneToday else { return }
@@ -91,11 +91,11 @@ class HabitsViewModel: ObservableObject {
         if let last = profile.lastHabitDate {
             let lastDay = calendar.startOfDay(for: last)
             let daysSince = calendar.dateComponents([.day], from: lastDay, to: today).day ?? 0
-            if daysSince == 0 { return }         // already counted today
+            if daysSince == 0 { return }
             if daysSince == 1 {
-                profile.streakDays += 1          // consecutive day
+                profile.streakDays += 1
             } else {
-                profile.streakDays = 1           // missed one or more days
+                profile.streakDays = 1
             }
         } else {
             profile.streakDays = 1
@@ -108,12 +108,12 @@ class HabitsViewModel: ObservableObject {
 
     private var waterHitToday: Bool { profile.dailyWaterML >= profile.waterMLTarget * 0.8 }
     private var sleepHitToday: Bool { profile.sleepHours >= profile.sleepHoursTarget * 0.85 }
-    
-    // MARK: - Reminders
+
+
     func toggleReminders(enabled: Bool) {
         profile.remindersEnabled = enabled
         saveHabits()
-        
+
         if enabled {
             requestNotificationPermission()
             scheduleDailyReminder()
@@ -121,7 +121,7 @@ class HabitsViewModel: ObservableObject {
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         }
     }
-    
+
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error {
@@ -129,7 +129,7 @@ class HabitsViewModel: ObservableObject {
             }
         }
     }
-    
+
     func scheduleDailyReminder() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
 
@@ -149,8 +149,8 @@ class HabitsViewModel: ObservableObject {
         }
     }
 
-    /// Streak logic uses configurable water/sleep targets now.
-    
-    // Removed stopSavingIndicatorIfServerIsSlow() as it's no longer necessary
-    
+
+
+
+
 }

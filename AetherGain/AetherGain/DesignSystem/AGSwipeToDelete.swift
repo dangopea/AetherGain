@@ -1,11 +1,11 @@
-//
-//  AGSwipeToDelete.swift
-//  AetherGain
-//
-//  Slide a row/card left to reveal a red delete button. Works inside a
-//  vanilla VStack — no need to be inside a `List` (which would break our
-//  custom card styling).
-//
+
+
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -20,7 +20,7 @@ struct AGSwipeToDelete<Content: View>: View {
 
     var body: some View {
         ZStack(alignment: .trailing) {
-            // Red delete affordance sitting behind the row.
+
             Button {
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                     offset = 0
@@ -43,20 +43,20 @@ struct AGSwipeToDelete<Content: View>: View {
             .opacity(offset < -8 ? 1 : 0)
             .allowsHitTesting(offset < -30)
 
-            // The row itself.
+
             content()
-                .background(AGColor.canvas) // opaque so the red doesn't bleed through
+                .background(AGColor.canvas)
                 .offset(x: offset)
                 .gesture(
                     DragGesture(minimumDistance: 12)
                         .onChanged { g in
                             dragging = true
                             let dx = g.translation.width
-                            // Left-only swipe. Small rubber-band past -actionWidth.
+
                             if dx <= 0 {
                                 offset = max(dx, -actionWidth - 24)
                             } else {
-                                // If already revealed, allow right-swipe to close.
+
                                 offset = min(0, -actionWidth + dx)
                             }
                         }
@@ -69,8 +69,8 @@ struct AGSwipeToDelete<Content: View>: View {
                 )
         }
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        // No outer onTapGesture — that would swallow taps meant for the row's
-        // own tap-to-edit / tap-to-log actions. Users can close a revealed
-        // swipe by dragging right, or tapping the Delete button which resets.
+
+
+
     }
 }

@@ -1,10 +1,10 @@
-//
-//  FoodDatabase.swift
-//  AetherGain
-//
-//  Local food macro reference (all values per 100 g). USDA-derived where
-//  possible. Aliases power Vision-framework label mapping and fuzzy search.
-//
+
+
+
+
+
+
+
 
 import Foundation
 
@@ -21,7 +21,7 @@ struct FoodMacros {
 enum FoodDatabase {
 
     static let all: [FoodMacros] = [
-        // MARK: - Indian
+
         FoodMacros(name: "Idli",     calories: 133, protein: 4.0,  carbs: 25.0, fat: 1.5,  defaultServingG: 60,
                    aliases: ["idli", "steamed cake", "rice cake"]),
         FoodMacros(name: "Dosa",     calories: 168, protein: 4.5,  carbs: 26.0, fat: 5.5,  defaultServingG: 80,
@@ -53,7 +53,7 @@ enum FoodDatabase {
         FoodMacros(name: "Rajma",    calories: 140, protein: 8.7,  carbs: 22.8, fat: 0.5,  defaultServingG: 200,
                    aliases: ["rajma", "kidney bean curry"]),
 
-        // MARK: - Western mains
+
         FoodMacros(name: "Pizza",    calories: 266, protein: 11.0, carbs: 33.0, fat: 10.0, defaultServingG: 100,
                    aliases: ["pizza", "margherita"]),
         FoodMacros(name: "Burger",   calories: 295, protein: 17.0, carbs: 30.0, fat: 12.0, defaultServingG: 220,
@@ -73,7 +73,7 @@ enum FoodDatabase {
         FoodMacros(name: "Taco",     calories: 226, protein: 9.0,  carbs: 20.0, fat: 12.0, defaultServingG: 80,
                    aliases: ["taco", "burrito", "quesadilla"]),
 
-        // MARK: - Protein
+
         FoodMacros(name: "Chicken",  calories: 165, protein: 31.0, carbs: 0.0,  fat: 3.6,  defaultServingG: 100,
                    aliases: ["chicken", "poultry", "grilled chicken", "chicken breast"]),
         FoodMacros(name: "Fish",     calories: 206, protein: 22.0, carbs: 0.0,  fat: 12.0, defaultServingG: 100,
@@ -89,7 +89,7 @@ enum FoodDatabase {
         FoodMacros(name: "Shrimp",   calories: 99,  protein: 24.0, carbs: 0.2,  fat: 0.3,  defaultServingG: 100,
                    aliases: ["shrimp", "prawn"]),
 
-        // MARK: - Carbs & grains
+
         FoodMacros(name: "Oats",     calories: 389, protein: 16.9, carbs: 66.3, fat: 6.9,  defaultServingG: 40,
                    aliases: ["oats", "oatmeal", "porridge"]),
         FoodMacros(name: "Quinoa",   calories: 120, protein: 4.4,  carbs: 21.3, fat: 1.9,  defaultServingG: 150,
@@ -101,7 +101,7 @@ enum FoodDatabase {
         FoodMacros(name: "French fries", calories: 312, protein: 3.4, carbs: 41.0, fat: 15.0, defaultServingG: 100,
                    aliases: ["fries", "french fries", "chips"]),
 
-        // MARK: - Dairy & snacks
+
         FoodMacros(name: "Milk",     calories: 61,  protein: 3.2,  carbs: 4.8,  fat: 3.3,  defaultServingG: 250,
                    aliases: ["milk", "whole milk", "skimmed milk"]),
         FoodMacros(name: "Yogurt",   calories: 61,  protein: 3.5,  carbs: 4.7,  fat: 3.3,  defaultServingG: 150,
@@ -127,7 +127,7 @@ enum FoodDatabase {
         FoodMacros(name: "Donut",    calories: 452, protein: 4.9, carbs: 51.0, fat: 25.0,  defaultServingG: 60,
                    aliases: ["glazed donut", "krispy kreme"]),
 
-        // MARK: - Fruit & veg
+
         FoodMacros(name: "Banana",   calories: 89,  protein: 1.1,  carbs: 22.8, fat: 0.3,  defaultServingG: 120,
                    aliases: ["banana"]),
         FoodMacros(name: "Apple",    calories: 52,  protein: 0.3,  carbs: 14.0, fat: 0.2,  defaultServingG: 180,
@@ -153,7 +153,7 @@ enum FoodDatabase {
         FoodMacros(name: "Tomato",   calories: 18,  protein: 0.9,  carbs: 3.9,  fat: 0.2,  defaultServingG: 100,
                    aliases: ["tomato"]),
 
-        // MARK: - Drinks
+
         FoodMacros(name: "Coke",     calories: 42,  protein: 0.0,  carbs: 10.6, fat: 0.0,  defaultServingG: 330,
                    aliases: ["coke", "cola", "pepsi", "soda", "soft drink"]),
         FoodMacros(name: "Orange juice", calories: 45, protein: 0.7, carbs: 10.4, fat: 0.2, defaultServingG: 250,
@@ -173,7 +173,7 @@ enum FoodDatabase {
         FoodMacros(name: "Smoothie", calories: 60,  protein: 1.0,  carbs: 14.0, fat: 0.3,  defaultServingG: 300,
                    aliases: ["smoothie", "fruit smoothie"]),
 
-        // MARK: - More proteins
+
         FoodMacros(name: "Turkey",   calories: 189, protein: 29.0, carbs: 0.0,  fat: 7.4,  defaultServingG: 100,
                    aliases: ["turkey", "turkey breast"]),
         FoodMacros(name: "Lamb",     calories: 294, protein: 25.0, carbs: 0.0,  fat: 21.0, defaultServingG: 100,
@@ -197,7 +197,7 @@ enum FoodDatabase {
         FoodMacros(name: "Cottage cheese", calories: 98, protein: 11.0, carbs: 3.4, fat: 4.3, defaultServingG: 100,
                    aliases: ["cottage cheese"]),
 
-        // MARK: - Grains & starches
+
         FoodMacros(name: "Bagel",    calories: 257, protein: 10.0, carbs: 51.0, fat: 1.5,  defaultServingG: 100,
                    aliases: ["bagel"]),
         FoodMacros(name: "Muffin",   calories: 424, protein: 5.0,  carbs: 55.0, fat: 20.0, defaultServingG: 80,
@@ -219,7 +219,7 @@ enum FoodDatabase {
         FoodMacros(name: "Popcorn",  calories: 387, protein: 13.0, carbs: 78.0, fat: 4.5,  defaultServingG: 30,
                    aliases: ["popcorn"]),
 
-        // MARK: - Fruits
+
         FoodMacros(name: "Pineapple", calories: 50, protein: 0.5, carbs: 13.0, fat: 0.1,  defaultServingG: 150,
                    aliases: ["pineapple"]),
         FoodMacros(name: "Papaya",   calories: 43,  protein: 0.5,  carbs: 11.0, fat: 0.3,  defaultServingG: 150,
@@ -245,7 +245,7 @@ enum FoodDatabase {
         FoodMacros(name: "Raisins",  calories: 299, protein: 3.1,  carbs: 79.0, fat: 0.5,  defaultServingG: 30,
                    aliases: ["raisins"]),
 
-        // MARK: - Vegetables
+
         FoodMacros(name: "Cucumber", calories: 16,  protein: 0.7,  carbs: 3.6,  fat: 0.1,  defaultServingG: 100,
                    aliases: ["cucumber"]),
         FoodMacros(name: "Onion",    calories: 40,  protein: 1.1,  carbs: 9.3,  fat: 0.1,  defaultServingG: 80,
@@ -267,7 +267,7 @@ enum FoodDatabase {
         FoodMacros(name: "Beetroot", calories: 43,  protein: 1.6,  carbs: 9.6,  fat: 0.2,  defaultServingG: 100,
                    aliases: ["beetroot", "beet"]),
 
-        // MARK: - Sauces & condiments
+
         FoodMacros(name: "Ketchup",  calories: 112, protein: 1.7,  carbs: 26.0, fat: 0.4,  defaultServingG: 17,
                    aliases: ["ketchup", "tomato sauce"]),
         FoodMacros(name: "Mayonnaise", calories: 680, protein: 1.0, carbs: 0.6, fat: 75.0, defaultServingG: 15,
@@ -285,7 +285,7 @@ enum FoodDatabase {
         FoodMacros(name: "Jam",      calories: 250, protein: 0.5,  carbs: 66.0, fat: 0.1,  defaultServingG: 20,
                    aliases: ["jam", "jelly", "preserve"]),
 
-        // MARK: - Indian additions
+
         FoodMacros(name: "Naan",     calories: 310, protein: 9.0,  carbs: 55.0, fat: 6.0,  defaultServingG: 90,
                    aliases: ["naan"]),
         FoodMacros(name: "Pav",      calories: 274, protein: 8.5,  carbs: 51.0, fat: 3.6,  defaultServingG: 40,
@@ -307,7 +307,7 @@ enum FoodDatabase {
         FoodMacros(name: "Lassi",    calories: 91,  protein: 3.4,  carbs: 12.0, fat: 3.0,  defaultServingG: 250,
                    aliases: ["lassi"]),
 
-        // MARK: - Snacks & desserts
+
         FoodMacros(name: "Chips",    calories: 536, protein: 7.0,  carbs: 50.0, fat: 34.0, defaultServingG: 30,
                    aliases: ["chips", "crisps", "potato chips"]),
         FoodMacros(name: "Pretzels", calories: 380, protein: 10.0, carbs: 80.0, fat: 3.0,  defaultServingG: 30,
@@ -325,7 +325,7 @@ enum FoodDatabase {
         FoodMacros(name: "Gum",      calories: 360, protein: 0.0,  carbs: 90.0, fat: 0.0,  defaultServingG: 3,
                    aliases: ["gum", "chewing gum"]),
 
-        // MARK: - Beverages (extra)
+
         FoodMacros(name: "Energy drink", calories: 45, protein: 0.0, carbs: 11.0, fat: 0.0, defaultServingG: 250,
                    aliases: ["energy drink", "red bull", "monster"]),
         FoodMacros(name: "Sports drink", calories: 24, protein: 0.0, carbs: 6.0, fat: 0.0, defaultServingG: 250,
@@ -350,16 +350,16 @@ enum FoodDatabase {
         return nil
     }
 
-    /// Word-boundary scoring. Plain substring containment matched "steak"
-    /// against the alias "tea" and "hamburger" against "ham".
+
+
     private static func containsPhrase(_ haystack: String, _ needle: String) -> Bool {
         guard !needle.isEmpty else { return false }
         return (" " + haystack + " ").contains(" " + needle + " ")
     }
 
-    /// Minimum score a candidate must reach before it is accepted. Below this
-    /// the caller receives `nil` and the user is asked to enter the food by
-    /// hand, which is preferable to silently logging the wrong macros.
+
+
+
     static let minimumMatchScore: Float = 0.08
 
     static func bestMatch(fromLabels labels: [(label: String, confidence: Float)]) -> FoodMacros? {
@@ -378,20 +378,20 @@ enum FoodDatabase {
             for food in all {
                 let foodNameLower = food.name.lowercased()
 
-                // 1. The whole label is exactly the food name or an alias.
+
                 if lower == foodNameLower || food.aliases.contains(lower) {
                     scores[food.name, default: 0] += conf * 3
                     continue
                 }
 
-                // 2. The food name appears as a whole word sequence.
+
                 if containsPhrase(lower, foodNameLower) {
                     scores[food.name, default: 0] += conf * 2
                     continue
                 }
 
-                // 3. An alias as a whole word sequence, or a single token that is exactly
-                //    an alias. This rescues multi-word labels such as "hot dog stand".
+
+
                 var aliasHit: Float = 0
                 for alias in food.aliases {
                     if containsPhrase(lower, alias) {

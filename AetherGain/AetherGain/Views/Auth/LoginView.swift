@@ -1,9 +1,9 @@
-//
-//  LoginView.swift
-//  AetherGain
-//
-//  Created by Dhriti on 1/4/2569 BE.
-//
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -42,7 +42,7 @@ struct LoginView: View {
         .environmentObject(authVM)
     }
 
-    // MARK: - Hero
+
 
     private var hero: some View {
         VStack(spacing: 10) {
@@ -67,7 +67,7 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - Form
+
 
     private var formCard: some View {
         VStack(spacing: 14) {
@@ -187,7 +187,7 @@ struct LoginView: View {
         .font(AGFont.caption(12))
     }
 
-    // MARK: - Actions
+
 
     private func sendReset() {
         errorMessage = nil

@@ -1,7 +1,7 @@
-//
-//  PrivacyNoticeView.swift
-//  AetherGain
-//
+
+
+
+
 
 import SwiftUI
 

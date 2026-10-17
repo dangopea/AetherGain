@@ -1,25 +1,25 @@
-//
-//  MealViewModel.swift
-//  AetherGain
-//
-//  Meal state + macro calculation.
-//
-//  Macro calculation methodology (transparent for the IA):
-//  1.  Reference macros are stored per 100 g of the food (FoodDatabase or OpenFoodFacts).
-//  2.  The user enters an amount + unit. We convert it to grams:
-//        - "g", "gram", "grams"        → grams as entered
-//        - "kg"                         → × 1000
-//        - "ml"                         → × 1 (assume water-density for beverages)
-//        - "cup"                        → × 240
-//        - "tbsp"                       → × 15
-//        - "tsp"                        → × 5
-//        - "oz"                         → × 28.35
-//        - "piece" / "serving"          → × food.defaultServingG
-//        - "small"/"medium"/"large"     → 0.75× / 1.0× / 1.25× default serving
-//  3.  Final macro = per100g × grams / 100.
-//  4.  We surface a "For reference: 100 g of X gives you Y kcal, P g protein…"
-//      hint under the input so the user can sanity-check.
-//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 import Foundation
 import FirebaseAuth
@@ -42,13 +42,13 @@ class MealViewModel: ObservableObject {
     @Published var isAnalyzingPhoto = false
     @Published var errorMessage: String?
     @Published var candidates: [FoodCandidate] = []
-    /// One entry per food found in a multi-region scan of the photo.
-    /// Empty unless `analyzeMealPhotoByRegion` was used.
+
+
     @Published var regionCandidates: [RegionCandidate] = []
     @Published var referenceHint: String? = nil
 
-    /// If we're editing an existing meal, its Firestore id sits here so save()
-    /// updates rather than appends.
+
+
     @Published var editingMealID: String? = nil
 
     private var db = Firestore.firestore()
@@ -58,9 +58,9 @@ class MealViewModel: ObservableObject {
 
     init() {
         resetCurrentMeal()
-        // Listen for auth changes: (1) load meals as soon as sign-in resolves
-        // (so we don't miss meals when the VM is constructed before Firebase
-        // Auth has restored the session), and (2) clear + detach on sign-out.
+
+
+
         authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             guard let self else { return }
             if user?.uid != nil {
@@ -71,7 +71,7 @@ class MealViewModel: ObservableObject {
                 self.listener = nil
             }
         }
-        // Also attempt an immediate load in case auth is already resolved.
+
         loadMeals()
     }
 
@@ -82,7 +82,7 @@ class MealViewModel: ObservableObject {
         }
     }
 
-    /// Populate the log form with an existing meal for editing.
+
     func editMeal(_ meal: MealEntry) {
         currentMeal = meal
         editingMealID = meal.id
@@ -91,7 +91,7 @@ class MealViewModel: ObservableObject {
         errorMessage = nil
     }
 
-    // MARK: - Firestore
+
 
     func loadMeals() {
         guard let uid = userID else { return }
@@ -100,7 +100,7 @@ class MealViewModel: ObservableObject {
             .order(by: "date", descending: true)
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self else { return }
-                if let error {
+                if error != nil {
                     DispatchQueue.main.async { self.errorMessage = "Couldn't load your meals. Check your connection and reopen this screen." }
                     return
                 }
@@ -139,7 +139,7 @@ class MealViewModel: ObservableObject {
             try ref.setData(from: currentMeal, merge: true) { [weak self] error in
                 guard let self else { return }
                 DispatchQueue.main.async {
-                    if let error {
+                    if error != nil {
                         self.errorMessage = "Couldn't save this meal. Check your connection and tap Log again."
                     } else {
                         self.errorMessage = nil
@@ -172,17 +172,17 @@ class MealViewModel: ObservableObject {
         editingMealID = nil
     }
 
-    // MARK: - Photo analysis
-    //
-    // Uses Apple's on-device Vision image classifier (VNClassifyImageRequest).
-    // It returns hundreds of labels with confidences. We keep the top 12 above
-    // a very low threshold (0.02) so we always have *something* to show, and
-    // let the user tap any chip. Chips backed by our FoodDatabase are tinted
-    // teal (macros auto-apply on tap). Raw ones are grey (tap will try
-    // OpenFoodFacts).
+
+
+
+
+
+
+
+
 
     func analyzeMealPhoto(_ image: UIImage) {
-        guard let cgImage = image.cgImage else {
+        guard image.cgImage != nil else {
             errorMessage = "Couldn't read this image (format not supported)."
             return
         }
@@ -192,12 +192,12 @@ class MealViewModel: ObservableObject {
             self.candidates = []
         }
 
-        // Delegate to FoodClassifier which picks the bundled CoreML model
-        // (Food-101 style) if present, else Apple's generic VNClassifyImage.
+
+
         FoodClassifier.classify(image: image) { [weak self] result in
             guard let self else { return }
             switch result {
-            case .failure(let error):
+            case .failure(_):
                 DispatchQueue.main.async {
                     self.isAnalyzingPhoto = false
                     self.errorMessage = "That photo couldn't be analysed. Take another one in better light, or enter the food by hand."
@@ -219,7 +219,7 @@ class MealViewModel: ObservableObject {
                     if let food = bestFood {
                         self.applyFood(food)
                     } else if let top = classified.first {
-                        // Prefill the top label so user just needs to hit Calculate.
+
                         self.currentMeal.foodName = top.label.capitalized
                         let src = usingBundled ? "FoodClassifier" : "Vision default"
                         self.errorMessage = "\(src) returned \(classified.count) labels — none matched the local DB. Tap a chip, or edit the name and Calculate (OpenFoodFacts will try to resolve it)."
@@ -231,7 +231,7 @@ class MealViewModel: ObservableObject {
         }
     }
 
-    /// Wipe photo-related state (used by the delete-photo button).
+
     func clearPhotoAnalysis() {
         candidates = []
         referenceHint = nil
@@ -247,7 +247,7 @@ class MealViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Macro calculation
+
 
     func calculateNutritionForCurrentMeal() {
         let name = currentMeal.foodName.trimmingCharacters(in: .whitespaces)
@@ -255,9 +255,9 @@ class MealViewModel: ObservableObject {
             errorMessage = "Enter a food name first."
             return
         }
-        // "Bowl mode": if the user typed a comma-separated list like
-        // "100g oats, 2 cups milk, 30g protein powder", parse each ingredient,
-        // look each up locally, and sum the macros for the whole meal.
+
+
+
         if name.contains(",") {
             calculateBowlMacros(from: name)
             return
@@ -269,18 +269,18 @@ class MealViewModel: ObservableObject {
         fetchFromOpenFoodFacts(query: name)
     }
 
-    // MARK: - Bowl (multi-ingredient) parsing
 
-    /// One parsed ingredient token from a comma-separated string.
+
+
     private struct BowlIngredient {
         var amount: Double
         var unit: String
         var name: String
     }
 
-    /// Split, parse, look up locally, sum macros. Ingredients that don't map
-    /// to the local DB are noted in the reference hint so the user knows what
-    /// was skipped.
+
+
+
     private func calculateBowlMacros(from input: String) {
         let tokens = input
             .split(separator: ",")
@@ -317,9 +317,9 @@ class MealViewModel: ObservableObject {
             return
         }
 
-        // Store per-100g equivalents so the amount slider still works if the
-        // user tweaks amount afterwards — using the WHOLE bowl as one 100g
-        // reference (per-100g = totals / (totalGrams/100)).
+
+
+
         let per100Factor = max(1, totalGrams) / 100.0
         currentMeal.per100gCalories = totalCal / per100Factor
         currentMeal.per100gProtein  = totalPro / per100Factor
@@ -343,18 +343,18 @@ class MealViewModel: ObservableObject {
             "Ingredients not recognised: \(unknown.joined(separator: ", ")). Rename or omit them."
     }
 
-    /// Parse "100g oats" / "2 cups milk" / "30g protein powder" / "1 apple".
+
     private func parseIngredient(_ raw: String) -> BowlIngredient {
-        // Regex: optional number+unit-glued (30g), then optional number and
-        // unit words, then the food name at the end.
+
+
         let text = raw.lowercased().trimmingCharacters(in: .whitespaces)
 
-        // Try "<number><letters> rest" (e.g. "30g oats", "250ml milk")
+
         if let match = text.range(of: #"^(\d+(?:\.\d+)?)([a-z]+)\s+(.+)$"#,
                                   options: .regularExpression) {
             let full = String(text[match])
-            // Extract via components — regex captures aren't as easy in Swift
-            // NSString without NSRegularExpression, so do a manual split.
+
+
             var num = ""
             var unit = ""
             var idx = full.startIndex
@@ -369,7 +369,7 @@ class MealViewModel: ObservableObject {
             return BowlIngredient(amount: amount, unit: unit, name: rest)
         }
 
-        // Try "<number> <unit> rest" (e.g. "2 cups milk", "1 large egg")
+
         if let match = text.range(of: #"^(\d+(?:\.\d+)?)\s+(\S+)\s+(.+)$"#,
                                   options: .regularExpression) {
             let parts = text[match].split(separator: " ", maxSplits: 2,
@@ -383,7 +383,7 @@ class MealViewModel: ObservableObject {
             }
         }
 
-        // "<number> rest" (e.g. "2 eggs") — no unit, treat as pieces.
+
         if let match = text.range(of: #"^(\d+(?:\.\d+)?)\s+(.+)$"#,
                                   options: .regularExpression) {
             let parts = text[match].split(separator: " ", maxSplits: 1,
@@ -397,13 +397,13 @@ class MealViewModel: ObservableObject {
             }
         }
 
-        // Fallback: no numbers, treat as one serving.
+
         return BowlIngredient(amount: 1, unit: "serving", name: text)
     }
 
-    /// Convert an amount+unit to grams using the food's default serving.
-    /// Shares logic with gramsForCurrentAmount but takes explicit params so
-    /// we can call it for bowl ingredients.
+
+
+
     private func gramsFor(amount: Double, unit: String, food: FoodMacros) -> Double {
         let u = unit.lowercased()
         if ["g", "gm", "gram", "grams"].contains(u) { return amount }
@@ -417,12 +417,12 @@ class MealViewModel: ObservableObject {
         if u == "small"  { return amount * food.defaultServingG * 0.75 }
         if u == "large"  { return amount * food.defaultServingG * 1.25 }
         if u == "medium" { return amount * food.defaultServingG }
-        // pieces / servings / anything else — default serving size
+
         return amount * food.defaultServingG
     }
 
-    /// Not private: the multi-region flow in MealViewModelRegions.swift calls
-    /// it, and `private` in Swift does not reach an extension in another file.
+
+
     func applyFood(_ food: FoodMacros) {
         currentMeal.foodName = food.name
         currentMeal.per100gCalories = food.calories
@@ -441,7 +441,7 @@ class MealViewModel: ObservableObject {
         errorMessage = nil
     }
 
-    /// Public: called from the view when amount/unit changes.
+
     func recalculateFromCurrent() {
         let grams = gramsForCurrentAmount()
         currentMeal.grams = grams
@@ -476,7 +476,7 @@ class MealViewModel: ObservableObject {
         return amount * baseServing
     }
 
-    // MARK: - OpenFoodFacts fallback
+
 
     private func fetchFromOpenFoodFacts(query: String) {
         DispatchQueue.main.async { self.isLoading = true }
@@ -488,7 +488,7 @@ class MealViewModel: ObservableObject {
         URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
             guard let self else { return }
             DispatchQueue.main.async { self.isLoading = false }
-            if let error {
+            if error != nil {
                 DispatchQueue.main.async {
                     self.errorMessage = "Couldn't reach the food database. Check your connection, or enter the macros by hand."
                 }
@@ -503,9 +503,9 @@ class MealViewModel: ObservableObject {
                 return
             }
 
-            // OpenFoodFacts returns products in arbitrary order; some have empty
-            // nutriments blocks. Walk the list and pick the first product with
-            // usable per-100g energy.
+
+
+
             var cals = 0.0, pro = 0.0, carbs = 0.0, fat = 0.0
             var matchedProduct: String? = nil
             for p in products.prefix(15) {

@@ -1,14 +1,14 @@
-//
-//  ProfileViewModel.swift
-//  AetherGain
-//
-/* (1) Load the user’s profile from Firestore after login,
-   (2) Save changes when they edit,
-   (3) Create a new empty profile if it’s their first time,
-   (4) Be observable so the UI updates automatically */
-//
-//  Created by Dhriti on 1/4/2569 BE.
-//
+
+
+
+
+
+
+
+
+
+
+
 
 import Foundation
 import FirebaseAuth
@@ -16,54 +16,54 @@ import FirebaseFirestore
 import Combine
 
 
-// Manages loading, saving, and observing a user's profile in Firestore
+
 class ProfileViewModel: ObservableObject {
-    
-    @Published var profile: UserProfile = UserProfile() // UI will update automatically when this changes
-    
-    // Published states for feedback (UI)
+
+    @Published var profile: UserProfile = UserProfile()
+
+
     @Published var isLoading = false
     @Published var errorMessage: String?
-    
+
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
     private var authStateHandle: AuthStateDidChangeListenerHandle?
-    
-    // UID of current user from Firebase Auth
+
+
     private var userID: String? {
         Auth.auth().currentUser?.uid
     }
-    
+
     init() {
-        authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in // Start listening for auth changes + load profile when user logs in
-            
+        authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+
             if let uid = user?.uid {
                 self?.loadProfile(for: uid)
             } else {
-                // User logged out – reset profile
+
                 self?.profile = UserProfile()
                 self?.removeListener()
             }
         }
     }
-    
-    // Function: Load the profile from Firestore, or create an empty one if it doesn't exist.
+
+
     func loadProfile(for uid: String) {
         isLoading = true
-        
+
         let docRef = db.collection("users").document(uid)
-        
+
         listener = docRef.addSnapshotListener { [weak self] snapshot, error in
             guard let self = self else { return }
-            
-            if let error = error {
+
+            if error != nil {
                 self.errorMessage = "Couldn't load your profile. Check your connection and reopen this screen."
                 self.isLoading = false
                 return
             }
-            
-            // try? made a decode failure look like a missing document, and the else
-            // branch overwrites the real profile. Absence now comes from snapshot.exists.
+
+
+
             guard let snapshot else { self.isLoading = false; return }
 
             if snapshot.exists {
@@ -75,31 +75,31 @@ class ProfileViewModel: ObservableObject {
                 }
             } else {
                 self.profile = UserProfile()
-                self.saveProfile()  // First sign-in: create the document.
+                self.saveProfile()
             }
-            
+
             self.isLoading = false
         }
     }
-        
-    //Function: Save current profile to Firestore
+
+
     func saveProfile() {
         guard let uid = userID else {
             errorMessage = "You're signed out. Sign in again to continue."
             return
         }
-        
+
         isLoading = true
         stopSavingIndicatorIfServerIsSlow()
-        
+
         let docRef = db.collection("users").document(uid)
-        
+
         do {
-            // merge: true keeps fields this model does not own, such as the xp that
-            // completeSession raises with an atomic increment.
+
+
             try docRef.setData(from: profile, merge: true) { [weak self] error in
                 DispatchQueue.main.async {
-                    if let error = error {
+                    if error != nil {
                         self?.errorMessage = "Couldn't save your profile. Check your connection and tap Save again."
                     } else {
                         self?.errorMessage = nil
@@ -112,8 +112,8 @@ class ProfileViewModel: ObservableObject {
             isLoading = false
         }
     }
-        
-    //Function: Clean up listener when no longer needed, ensure that there's no memory leaks
+
+
     private func removeListener() {
         listener?.remove()
         listener = nil
@@ -122,14 +122,14 @@ class ProfileViewModel: ObservableObject {
             authStateHandle = nil
         }
     }
-    
+
     private func stopSavingIndicatorIfServerIsSlow() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             guard let self, self.isLoading else { return }
             self.isLoading = false
         }
     }
-        
+
     deinit {
         removeListener()
     }

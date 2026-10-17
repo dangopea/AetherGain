@@ -1,9 +1,9 @@
-//
-//  HabitsView.swift
-//  AetherGain
-//
-//  Customisable water/sleep targets, reminder time picker, streak HUD.
-//
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -52,7 +52,7 @@ struct HabitsView: View {
     private var waterDone: Bool { habitsVM.profile.dailyWaterML >= habitsVM.profile.waterMLTarget * 0.8 }
     private var sleepDone: Bool { habitsVM.profile.sleepHours >= habitsVM.profile.sleepHoursTarget * 0.85 }
 
-    // MARK: - Streak
+
 
     private var streakHeader: some View {
         HStack(spacing: 16) {
@@ -71,7 +71,7 @@ struct HabitsView: View {
         .agCard()
     }
 
-    // MARK: - Water
+
 
     private var waterCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -121,7 +121,7 @@ struct HabitsView: View {
         .agCard()
     }
 
-    // MARK: - Sleep
+
 
     private var sleepCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -151,7 +151,7 @@ struct HabitsView: View {
         .agCard()
     }
 
-    // MARK: - Custom habit
+
 
     private var customHabitCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -172,7 +172,7 @@ struct HabitsView: View {
         .agCard()
     }
 
-    // MARK: - Reminders
+
 
     private var reminderCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -210,7 +210,7 @@ struct HabitsView: View {
         .agCard()
     }
 
-    // MARK: - Custom target slider helper
+
 
     private func targetSlider(title: String,
                               value: Binding<Double>,
@@ -233,7 +233,7 @@ struct HabitsView: View {
                     .background(RoundedRectangle(cornerRadius: 6).fill(AGColor.panelHi))
                     .overlay(RoundedRectangle(cornerRadius: 6).stroke(tint.opacity(0.35), lineWidth: 1))
                     .onChange(of: value.wrappedValue) { _, newVal in
-                        // Clamp to range so manual entry can't blow past the slider.
+
                         if newVal < range.lowerBound { value.wrappedValue = range.lowerBound }
                         if newVal > range.upperBound { value.wrappedValue = range.upperBound }
                     }
@@ -243,7 +243,7 @@ struct HabitsView: View {
         .padding(.top, 4)
     }
 
-    // MARK: - Save
+
 
     private var saveButton: some View {
         AGPushButton(title: "Save habits", icon: "checkmark",

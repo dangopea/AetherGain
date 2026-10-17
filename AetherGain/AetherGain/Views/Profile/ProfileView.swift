@@ -1,7 +1,7 @@
-//
-//  ProfileView.swift
-//  AetherGain
-//
+
+
+
+
 
 import SwiftUI
 import PhotosUI
@@ -45,7 +45,7 @@ struct ProfileView: View {
         .onAppear { authVM.userDidInteract() }
     }
 
-    // MARK: - Identity
+
 
     private var identityCard: some View {
         HStack(spacing: 14) {
@@ -112,7 +112,7 @@ struct ProfileView: View {
             .ifEmpty("A")
     }
 
-    // MARK: - Targets
+
 
     private var targetsCard: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -158,7 +158,7 @@ struct ProfileView: View {
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(tint.opacity(0.3), lineWidth: 1))
     }
 
-    // MARK: - Stats
+
 
     private var statsCard: some View {
         HStack(spacing: 10) {
@@ -181,7 +181,7 @@ struct ProfileView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(tint.opacity(0.3), lineWidth: 1))
     }
 
-    // MARK: - Personal
+
 
     private var personalCard: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -223,7 +223,7 @@ struct ProfileView: View {
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(AGColor.stroke, lineWidth: 1))
     }
 
-    // MARK: - Privacy
+
 
     private var privacyCard: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -252,7 +252,7 @@ struct ProfileView: View {
         )
     }
 
-    // MARK: - Actions
+
 
     private var actionsCard: some View {
         VStack(spacing: 10) {

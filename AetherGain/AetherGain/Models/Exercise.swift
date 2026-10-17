@@ -1,9 +1,9 @@
-//
-//  Exercise.swift
-//  AetherGain
-//
-//  Created by Dhriti on 1/4/2569 BE.
-//
+
+
+
+
+
+
 
 import Foundation
 import FirebaseFirestore
@@ -12,9 +12,9 @@ enum ExerciseCategory: String, Codable, CaseIterable, Identifiable {
     case strength
     case cardio
     case mobility
-    
+
     var id: String { rawValue }
-    
+
     var displayName: String {
         switch self {
         case .strength:
@@ -28,26 +28,26 @@ enum ExerciseCategory: String, Codable, CaseIterable, Identifiable {
 }
 
 struct Exercise: Identifiable, Codable {
-    // NOTE: This used to be `@DocumentID var id: String?` but @DocumentID
-    // only works on top-level Firestore documents. When an Exercise sits
-    // inside `WorkoutSession.exercises`, @DocumentID silently drops the id
-    // during encode and decodes back to nil, which makes SwiftUI's ForEach
-    // treat every exercise as the same identity and render duplicates.
-    // Plain String default UUID keeps identity stable through Codable.
+
+
+
+
+
+
     var id: String = UUID().uuidString
 
-    var type: String = "" //You can add stuff in like "Bench Press", "Running"
+    var type: String = ""
     var category: ExerciseCategory? = .strength
     var sets: Int = 3
     var reps: Int = 10
-    var weightKG: Double = 0.0 // 0 if bodyweight/cardio
+    var weightKG: Double = 0.0
     var distanceKM: Double? = nil
     var durationMinutes: Double? = nil
     var inclinePercent: Double? = nil
     var notes: String = ""
-    
+
     init() {}
-    
+
     init(
         type: String = "",
         category: ExerciseCategory = .strength,
@@ -74,9 +74,9 @@ struct Exercise: Identifiable, Codable {
 struct ExerciseTemplate: Identifiable, Hashable {
     let name: String
     let category: ExerciseCategory
-    
+
     var id: String { name }
-    
+
     static let catalog: [ExerciseTemplate] = [
         ExerciseTemplate(name: "Bench Press", category: .strength),
         ExerciseTemplate(name: "Squat", category: .strength),
@@ -98,35 +98,35 @@ struct ExerciseTemplate: Identifiable, Hashable {
         ExerciseTemplate(name: "Stretching", category: .mobility),
         ExerciseTemplate(name: "Pilates", category: .mobility)
     ]
-    
+
     static func template(named name: String) -> ExerciseTemplate? {
         catalog.first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
     }
-    
+
     static func inferredCategory(for name: String) -> ExerciseCategory {
         if let template = template(named: name) {
             return template.category
         }
-        
+
         let lowercasedName = name.lowercased()
         let cardioKeywords = ["run", "jog", "cycle", "bike", "swim", "row", "walk", "treadmill", "elliptical", "cardio"]
         let mobilityKeywords = ["yoga", "stretch", "mobility", "pilates", "warm up", "cool down"]
-        
+
         if cardioKeywords.contains(where: lowercasedName.contains) {
             return .cardio
         }
-        
+
         if mobilityKeywords.contains(where: lowercasedName.contains) {
             return .mobility
         }
-        
+
         return .strength
     }
-    
+
     static func configuredExercise(named name: String) -> Exercise {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let category = inferredCategory(for: trimmedName)
-        
+
         switch category {
         case .strength:
             return Exercise(type: trimmedName, category: category, sets: 3, reps: 10, weightKG: 0)

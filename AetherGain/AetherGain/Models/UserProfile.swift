@@ -1,11 +1,11 @@
-//
-//  UserProfile.swift
-//  AetherGain
-//
-//  Firestore user document. Encrypted at rest by Google Cloud and in
-//  transit via HTTPS. Also stores computed daily targets (BMR/TDEE)
-//  and customisable habit/reminder settings.
-//
+
+
+
+
+
+
+
+
 
 import Foundation
 import FirebaseFirestore
@@ -36,7 +36,7 @@ enum ProteinPreference: String, Codable, CaseIterable, Identifiable {
     case medium = "Medium"
     case high   = "High"
     var id: String { rawValue }
-    /// Grams of protein per kg of body weight.
+
     var gramsPerKg: Double {
         switch self {
         case .low: return 1.6
@@ -49,7 +49,7 @@ enum ProteinPreference: String, Codable, CaseIterable, Identifiable {
 struct UserProfile: Identifiable, Codable {
     @DocumentID var id: String? = UUID().uuidString
 
-    // --- Identity (Criterion 2)
+
     var name: String = ""
     var age: Int = 18
     var sex: Sex = .other
@@ -57,21 +57,21 @@ struct UserProfile: Identifiable, Codable {
     var preferences: String = ""
     var experienceLevel: String = "Beginner"
 
-    // --- Anthropometrics
+
     var heightCM: Double = 170.0
     var weightKG: Double = 70.0
     var bodyFatPercent: Double? = nil
 
-    // --- Lifestyle (fuels BMR / TDEE)
+
     var avgStepsPerDay: Int = 6000
     var workoutsPerWeek: Int = 3
 
-    // --- Goal & targets
+
     var fitnessGoal: FitnessGoal = .maintain
     var goalRateKgPerWeek: Double = 0.5
     var proteinPreference: ProteinPreference = .medium
 
-    // Computed by TargetsCalculator — cached for offline display.
+
     var bmr: Int = 0
     var tdee: Int = 0
     var calorieTarget: Int = 0
@@ -80,7 +80,7 @@ struct UserProfile: Identifiable, Codable {
     var fatTargetG: Int = 0
     var hasOnboardedTargets: Bool = false
 
-    // --- Habit customisation (Criterion 6)
+
     var dailyWaterML: Double = 0.0
     var waterMLTarget: Double = 2500
     var sleepHours: Double = 0.0
@@ -94,11 +94,11 @@ struct UserProfile: Identifiable, Codable {
     var reminderHour: Int = 20
     var reminderMinute: Int = 0
 
-    // --- Gamification & privacy
+
     var xp: Int = 0
     var sharesToLeaderboard: Bool? = false
 
-    // --- Avatar (Firebase Storage URL)
+
     var profileImageURL: String? = nil
 
     init() {}

@@ -1,11 +1,11 @@
-//
-//  TargetsOnboardingView.swift
-//  AetherGain
-//
-//  Collects the inputs for BMR/TDEE and computes daily targets
-//  (calories, protein, carbs, fat). Runs once after Privacy notice
-//  but can be revisited from Profile → "Recompute my targets".
-//
+
+
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -14,7 +14,7 @@ struct TargetsOnboardingView: View {
     @AppStorage("ag.onboarding.targetsDone") private var targetsDone: Bool = false
     var onDone: () -> Void
 
-    // Local editable copy so we don't spam Firestore per field change.
+
     @State private var draft = UserProfile()
     @State private var stepIndex: Int = 0
     private let stepCount = 4
@@ -44,13 +44,13 @@ struct TargetsOnboardingView: View {
             }
         }
         .onAppear {
-            // Seed from any existing profile so a re-run keeps values.
+
             draft = profileVM.profile
             if draft.age <= 0 { draft.age = 18 }
         }
     }
 
-    // MARK: - Header
+
 
     private var progressHeader: some View {
         VStack(spacing: 8) {
@@ -75,7 +75,7 @@ struct TargetsOnboardingView: View {
         .padding(.horizontal, 16).padding(.top, 12)
     }
 
-    // MARK: - Steps
+
 
     private var personalStep: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -193,7 +193,7 @@ struct TargetsOnboardingView: View {
         .agCard()
     }
 
-    // MARK: - Live preview
+
 
     private var previewCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -226,7 +226,7 @@ struct TargetsOnboardingView: View {
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(tint.opacity(0.35), lineWidth: 1))
     }
 
-    // MARK: - Nav bar
+
 
     private var navBar: some View {
         HStack(spacing: 12) {

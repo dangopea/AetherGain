@@ -1,10 +1,10 @@
-//
-//  MealLogView.swift
-//  AetherGain
-//
-//  MyFitnessPal-style diary UI: meal groups (Breakfast/Lunch/Dinner/Snack),
-//  Calories Remaining formula bar, per-100g reference hint, gram-aware amounts.
-//
+
+
+
+
+
+
+
 
 import SwiftUI
 import PhotosUI
@@ -19,12 +19,12 @@ struct MealLogView: View {
     @State private var showLogSheet = false
     @State private var focusedMealType: MealType = .breakfast
 
-    /// Which day's diary we're viewing. Defaults to today; prev/next arrows adjust.
+
     @State private var selectedDate: Date = Calendar.current.startOfDay(for: Date())
 
     private let unitOptions = ["g", "kg", "ml", "cup", "tbsp", "tsp", "oz", "piece", "serving", "small", "medium", "large"]
 
-    // MARK: - Selected-day totals
+
 
     private var mealsForSelectedDay: [MealEntry] {
         mealVM.meals.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
@@ -43,11 +43,11 @@ struct MealLogView: View {
 
     private var isToday: Bool { Calendar.current.isDateInToday(selectedDate) }
 
-    /// The date+time to stamp on a new meal — respects the day the user is
-    /// currently viewing, so "Add food" on yesterday's diary logs to yesterday.
+
+
     private var dateForNewMeal: Date {
         if isToday { return Date() }
-        // Keep the current time-of-day but on the selected calendar day.
+
         let cal = Calendar.current
         let now = cal.dateComponents([.hour, .minute, .second], from: Date())
         return cal.date(bySettingHour: now.hour ?? 12,
@@ -56,7 +56,7 @@ struct MealLogView: View {
                         of: selectedDate) ?? selectedDate
     }
     private var isTomorrowBlocked: Bool {
-        // Don't allow scrolling past today.
+
         Calendar.current.startOfDay(for: selectedDate) >= Calendar.current.startOfDay(for: Date())
     }
 
@@ -86,7 +86,7 @@ struct MealLogView: View {
         .onAppear { authVM.userDidInteract() }
     }
 
-    // MARK: - Calories Remaining (MyFitnessPal style formula)
+
 
     private var caloriesRemainingCard: some View {
         let remaining = calorieTarget - totalCalories
@@ -123,7 +123,7 @@ struct MealLogView: View {
         Text(s).font(AGFont.mono(16, weight: .semibold)).foregroundColor(AGColor.inkMuted)
     }
 
-    // MARK: - Macros ring row (daily)
+
 
     private var macrosDailyCard: some View {
         HStack(spacing: 14) {
@@ -159,7 +159,7 @@ struct MealLogView: View {
         return min(1, Double(value) / Double(target))
     }
 
-    // MARK: - Meal sections
+
 
     private func mealSection(type: MealType) -> some View {
         let items = meals(for: type)
@@ -219,7 +219,7 @@ struct MealLogView: View {
         .agCard()
     }
 
-    // MARK: - Meal row (with source badge + explicit delete)
+
 
     private func mealRow(_ entry: MealEntry) -> some View {
         HStack(alignment: .center, spacing: 10) {
@@ -292,7 +292,7 @@ struct MealLogView: View {
         v == v.rounded() ? String(Int(v)) : String(format: "%.1f", v)
     }
 
-    // MARK: - Day picker bar
+
 
     private var dayPickerBar: some View {
         HStack(spacing: 12) {
@@ -338,7 +338,7 @@ struct MealLogView: View {
         }
     }
 
-    // MARK: - Log Sheet
+
 
     private var logSheet: some View {
         NavigationStack {
@@ -382,7 +382,7 @@ struct MealLogView: View {
         }
     }
 
-    // MARK: - Sheet cards
+
 
     private var photoCard: some View {
         VStack(spacing: 10) {
@@ -644,7 +644,7 @@ struct MealLogView: View {
         }
     }
 
-    // MARK: - Photo change handler
+
 
     private func handlePhotoChange(_ newItem: PhotosPickerItem?) {
         Task {

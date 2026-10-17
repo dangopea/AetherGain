@@ -1,49 +1,49 @@
-//
-//  AuthViewModel.swift
-//  AetherGain
-//
-// Purpose: Manage user authentication (signup, login, and 30-minute inactivity logout)
-//
-//  Created by Dhriti on 1/4/2569 BE.
-//
+
+
+
+
+
+
+
+
 
 import Foundation
 
-import FirebaseAuth //For FireBase login/signup functions
-import Combine // For publishing changes by SwiftUI internally
-import SwiftUI // For @Published and ObservableObject
+import FirebaseAuth
+import Combine
+import SwiftUI
 
 
-//Observable objects allow views to react automatically to changes
+
 class AuthViewModel: ObservableObject {
-    @Published var isSignedIn = false // True if user is signed in, false if not.
-    @Published var showTimeoutAlert = false //Triggers "Session expired" notificatoin
-    
-    private var inactivityTimer: Timer? //Timer to count down 30 minutes of inactivity
-    private let inactivityTimeout: TimeInterval = 30*60 // Duration of inactivity | 1800 seconds is 30 minutes
-    
-    //Initialization of the view model + setup of FireBase auth state listener
+    @Published var isSignedIn = false
+    @Published var showTimeoutAlert = false
+
+    private var inactivityTimer: Timer?
+    private let inactivityTimeout: TimeInterval = 30*60
+
+
     init() {
-        isSignedIn = Auth.auth().currentUser != nil //Check if view model is already created/if there's a logged-in user already
-        
-        Auth.auth().addStateDidChangeListener { [weak self] auth, user in // Check for change in state
+        isSignedIn = Auth.auth().currentUser != nil
+
+        Auth.auth().addStateDidChangeListener { [weak self] auth, user in
             guard let self = self else { return }
-            
+
             let wasSignedIn = self.isSignedIn
             self.isSignedIn = user != nil
-            
+
             if self.isSignedIn {
-                self.startInactivityTimer() // Once user is signed in, start the timer
+                self.startInactivityTimer()
             }
-            
+
             else if wasSignedIn {
-                self.stopInactivityTimer() //Stop the timer once the user is signed out
+                self.stopInactivityTimer()
             }
         }
     }
-    
-    //3 main functions: [SignUp, SignIn, Signout] for authentication
-    //Function: Create a new account w/ email + pwd. Completion handler used to handle inconveniences
+
+
+
     func signUp(email: String, password: String, completion: @escaping (Error?) -> Void) {
         Auth.auth().createUser(withEmail: email, password: password) { _, error in
             if let error = error {
@@ -55,8 +55,8 @@ class AuthViewModel: ObservableObject {
             completion(nil)
         }
     }
-    
-    //Function: Log into your account w/ existing email + pwd.
+
+
     func signIn(email: String, password: String, completion: @escaping (Error?) -> Void) {
         Auth.auth().signIn(withEmail: email, password: password) { _, error in
             if let error = error {
@@ -68,8 +68,8 @@ class AuthViewModel: ObservableObject {
             completion(nil)
         }
     }
-    
-    /// Send a password-reset email via Firebase Auth. `completion(nil)` on success.
+
+
     func sendPasswordReset(email: String, completion: @escaping (Error?) -> Void) {
         let trimmed = email.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
@@ -82,7 +82,7 @@ class AuthViewModel: ObservableObject {
         }
     }
 
-    //Function: Sign the user out entirely.
+
     func signOut() {
         do {
             try Auth.auth().signOut()
@@ -92,29 +92,29 @@ class AuthViewModel: ObservableObject {
         isSignedIn = false
         stopInactivityTimer()
     }
-    
-    
-    //3 functions handling inactivity: [startInactivityTimer, stopInactivityTimer and userDidCheck]
-    //Function: Start/reset the 30-minute inactivity timer
+
+
+
+
     private func startInactivityTimer() {
-        stopInactivityTimer() // Stop any timer that's already running
-        
+        stopInactivityTimer()
+
         inactivityTimer = Timer.scheduledTimer(withTimeInterval: inactivityTimeout, repeats: false) { [weak self] _ in
             guard let self else { return }
-            // signOut() swaps the root view to LoginView, where the alert lives, so the
-            // flag must be raised one run loop later or SwiftUI never sees the change.
+
+
             self.signOut()
             DispatchQueue.main.async { self.showTimeoutAlert = true }
         }
     }
-    
-    //Function: Stop any inactivity timer entirely
+
+
     private func stopInactivityTimer() {
         inactivityTimer?.invalidate()
         inactivityTimer = nil
     }
-    
-    //Function: Check for user interaction (any tap/appear, etc) and reset the timer
+
+
     func userDidInteract() {
         if isSignedIn {
             startInactivityTimer()

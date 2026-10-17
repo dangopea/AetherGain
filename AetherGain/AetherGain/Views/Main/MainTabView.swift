@@ -1,11 +1,11 @@
-//
-//  MainTabView.swift
-//  AetherGain
-//
-//  5 tabs: Home, Workouts, Meals, Habits, Progress.
-//  Each tab is wrapped here in its own NavigationStack so child views
-//  don't nest navigation stacks.
-//
+
+
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -60,7 +60,7 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - Workouts hub
+
 
 struct WorkoutsHubView: View {
     @State private var selection: Int = 0

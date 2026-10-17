@@ -1,9 +1,9 @@
-//
-//  AetherGainUITestsLaunchTests.swift
-//  AetherGainUITests
-//
-//  Created by Dhriti on 1/4/2569 BE.
-//
+
+
+
+
+
+
 
 import XCTest
 
@@ -22,8 +22,8 @@ final class AetherGainUITestsLaunchTests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
+
+
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Launch Screen"

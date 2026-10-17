@@ -1,9 +1,9 @@
-//
-//  NetworkMonitor.swift
-//  AetherGain
-//
-//  Criterion 9: monitor connectivity, notify UI, retry Firestore network on reconnect.
-//
+
+
+
+
+
+
 
 import Foundation
 import Combine
@@ -33,8 +33,8 @@ final class NetworkMonitor: ObservableObject {
         }
         monitor.start(queue: queue)
 
-        // pathUpdateHandler can miss a transition, and in the Simulator it watches
-        // the host Mac. Reconcile against currentPath on a timer and on foreground.
+
+
         pollTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.reconcile() }
         }
@@ -45,9 +45,9 @@ final class NetworkMonitor: ObservableObject {
             }
     }
 
-    /// Pulls the authoritative status and applies it only when it disagrees
-    /// with what the UI is showing, so the toast still fires exactly once per
-    /// real transition instead of every three seconds.
+
+
+
     private func reconcile() {
         let online = monitor.currentPath.status == .satisfied
         guard online != isOnline else { return }
@@ -61,7 +61,7 @@ final class NetworkMonitor: ObservableObject {
         print("[NetworkMonitor] path update: \(wasOnline ? "online" : "offline") -> \(online ? "online" : "offline")")
 
         if !wasOnline && online {
-            // Force Firestore to flush queued writes and resume listeners.
+
             Firestore.firestore().enableNetwork { _ in }
             AGToastCenter.shared.show("Back online — syncing your data.", kind: .success)
         } else if wasOnline && !online {

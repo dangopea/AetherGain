@@ -1,10 +1,10 @@
-//
-//  WorkoutHistoryView.swift
-//  AetherGain
-//
-//  Sessions list with header aggregates, category breakdown, search, sort,
-//  and swipe-to-delete (refunds XP).
-//
+
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -17,7 +17,7 @@ struct WorkoutHistoryView: View {
     @State private var sessionToDelete: WorkoutSession?
     @State private var sessionToEdit: WorkoutSession?
 
-    // MARK: - Derived
+
 
     var filteredAndSortedHistory: [WorkoutSession] {
         var filtered = workoutVM.history
@@ -100,7 +100,7 @@ struct WorkoutHistoryView: View {
         .onAppear { authVM.userDidInteract() }
     }
 
-    // MARK: - Aggregates card
+
 
     private var aggregatesCard: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -162,7 +162,7 @@ struct WorkoutHistoryView: View {
         .overlay(Capsule().stroke(color.opacity(0.3), lineWidth: 1))
     }
 
-    // MARK: - Search + sort
+
 
     private var searchBar: some View {
         HStack(spacing: 10) {
@@ -209,7 +209,7 @@ struct WorkoutHistoryView: View {
         .padding(.horizontal, 16)
     }
 
-    // MARK: - Session card
+
 
     private func sessionCard(_ session: WorkoutSession) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -242,7 +242,7 @@ struct WorkoutHistoryView: View {
                 .buttonStyle(.plain)
             }
 
-            // Volume + count summary
+
             HStack(spacing: 6) {
                 AGHudChip(text: "\(session.exercises.count) EXERCISES", tint: AGColor.amber)
                 if session.exercises.contains(where: { $0.category == .strength }) {
@@ -257,9 +257,9 @@ struct WorkoutHistoryView: View {
 
             Divider().background(AGColor.stroke)
 
-            // Use enumerated + index identity so historical sessions whose
-            // exercises were saved before Exercise.id was fixed still render
-            // correctly (their ids collapsed to nil under @DocumentID).
+
+
+
             ForEach(Array(session.exercises.enumerated()), id: \.offset) { pair in
                 let exercise = pair.element
                 HStack(spacing: 10) {
@@ -295,7 +295,7 @@ struct WorkoutHistoryView: View {
         }
     }
 
-    // MARK: - Empty state
+
 
     private var emptyState: some View {
         VStack(spacing: 10) {
@@ -312,7 +312,7 @@ struct WorkoutHistoryView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(AGColor.stroke, lineWidth: 1))
     }
 
-    // MARK: - Helpers
+
 
     private func colorFor(_ c: ExerciseCategory) -> Color {
         switch c {

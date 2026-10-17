@@ -1,10 +1,10 @@
-//
-//  ProfileImageService.swift
-//  AetherGain
-//
-//  Upload avatar to Firebase Storage at `profile_images/{uid}.jpg` and return
-//  a persistent download URL. Also loads the image as SwiftUI Image data.
-//
+
+
+
+
+
+
+
 
 import Foundation
 import UIKit
@@ -13,7 +13,7 @@ import FirebaseStorage
 
 enum ProfileImageService {
 
-    /// Compress and upload as JPEG (max ~600 x 600). Returns the download URL.
+
     static func upload(image: UIImage) async throws -> URL {
         guard let uid = Auth.auth().currentUser?.uid else {
             throw NSError(domain: "ProfileImage", code: 401,

@@ -1,7 +1,7 @@
-//
-//  LogWorkoutView.swift
-//  AetherGain
-//
+
+
+
+
 
 import SwiftUI
 
@@ -39,7 +39,7 @@ struct LogWorkoutView: View {
         }
     }
 
-    // MARK: - Cards
+
 
     private var xpHeaderCard: some View {
         HStack(spacing: 14) {
@@ -90,7 +90,7 @@ struct LogWorkoutView: View {
     }
 
     private func exerciseCard(index: Int) -> some View {
-        // Bounds-guard: array can transiently shrink around save/reset.
+
         let category: ExerciseCategory = {
             guard workoutVM.currentSession.exercises.indices.contains(index) else { return .strength }
             return workoutVM.currentSession.exercises[index].category ?? .strength
@@ -143,7 +143,7 @@ struct LogWorkoutView: View {
                 }
             }
 
-            // Manual category picker — no auto-inference on keystroke anymore.
+
             categoryPicker(index: index, currentCategory: category)
 
             HStack(spacing: 8) {
@@ -170,7 +170,7 @@ struct LogWorkoutView: View {
         .agCard()
     }
 
-    // MARK: - Category picker (manual)
+
 
     private func categoryPicker(index: Int, currentCategory: ExerciseCategory) -> some View {
         HStack(spacing: 6) {
@@ -218,7 +218,7 @@ struct LogWorkoutView: View {
         }
     }
 
-    // MARK: - Safe bindings (guard against Index out of range after session reset)
+
 
     private func safeText(index: Int) -> Binding<String> {
         Binding(
@@ -300,7 +300,7 @@ struct LogWorkoutView: View {
         return workoutVM.currentSession.exercises[index].reps
     }
 
-    // MARK: - Field variants
+
 
     private func strengthFields(for index: Int) -> some View {
         VStack(spacing: 10) {
@@ -377,9 +377,9 @@ struct LogWorkoutView: View {
                 let xpForToast = estimatedXP
                 workoutVM.completeSession()
                 authVM.userDidInteract()
-                // Feedback follows the validation result, not the server: Firestore's
-                // completion handler only fires on acknowledgement, so offline there
-                // would be none at all.
+
+
+
                 if let msg = workoutVM.errorMessage {
                     AGToastCenter.shared.show(msg, kind: .error)
                 } else {
@@ -390,7 +390,7 @@ struct LogWorkoutView: View {
         }
     }
 
-    // MARK: - Custom exercise sheet
+
 
     private var customExerciseSheet: some View {
         NavigationStack {

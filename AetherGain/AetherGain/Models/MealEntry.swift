@@ -1,7 +1,7 @@
-//
-//  MealEntry.swift
-//  AetherGain
-//
+
+
+
+
 
 import Foundation
 import FirebaseFirestore
@@ -39,20 +39,20 @@ struct MealEntry: Identifiable, Codable {
 
     var foodName: String = ""
 
-    /// User-visible amount + unit (e.g. 100 "g", 1 "cup", 2 "pieces").
+
     var amount: Double = 100
     var unit: String = "g"
 
-    // Reference macros per 100 g (what we display as "per 100g gives you...").
+
     var per100gCalories: Double = 0
     var per100gProtein: Double = 0
     var per100gCarbs: Double = 0
     var per100gFat: Double = 0
 
-    /// Estimated grams for this entry (drives the final macro numbers).
+
     var grams: Double = 100
 
-    // Final macro totals for this entry = grams * per100g / 100.
+
     var calories: Double = 0
     var protein: Double = 0
     var carbs: Double = 0
@@ -61,9 +61,9 @@ struct MealEntry: Identifiable, Codable {
     var notes: String = ""
     var photoURL: String? = nil
 
-    /// Where the macros came from — shown in the diary card so it's clear
-    /// whether the numbers are curated, third-party, or user-entered.
-    /// Values: "Local DB", "OpenFoodFacts", "Manual".
+
+
+
     var macroSource: String = "Manual"
 
     init() {}

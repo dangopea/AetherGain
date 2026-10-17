@@ -1,13 +1,13 @@
-//
-//  WorkoutEditSheet.swift
-//  AetherGain
-//
-//  Card-format editor for an existing workout session. Presented from
-//  WorkoutHistoryView when the user taps a session card. Allows adding
-//  new exercises, deleting existing ones, and changing all numbers. On
-//  save it calls WorkoutViewModel.updateSession which writes back to
-//  Firestore and adjusts XP delta atomically.
-//
+
+
+
+
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -15,7 +15,7 @@ struct WorkoutEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var workoutVM: WorkoutViewModel
 
-    /// Local editable copy — never mutates the on-list session until Save.
+
     @State private var draft: WorkoutSession
     @State private var isSaving = false
     @State private var errorMessage: String?
@@ -74,7 +74,7 @@ struct WorkoutEditSheet: View {
         }
     }
 
-    // MARK: - Header
+
 
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -107,7 +107,7 @@ struct WorkoutEditSheet: View {
         .agCard()
     }
 
-    // MARK: - Exercise card
+
 
     private func exerciseCard(index: Int) -> some View {
         let cat = draft.exercises[index].category ?? .strength
@@ -152,7 +152,7 @@ struct WorkoutEditSheet: View {
         .agCard()
     }
 
-    // MARK: - Category picker (manual override)
+
 
     private func categoryPicker(index: Int, currentCategory: ExerciseCategory) -> some View {
         HStack(spacing: 6) {
@@ -184,7 +184,7 @@ struct WorkoutEditSheet: View {
         }
     }
 
-    // MARK: - Field variants
+
 
     private func strengthFields(index: Int) -> some View {
         VStack(spacing: 10) {
@@ -237,7 +237,7 @@ struct WorkoutEditSheet: View {
         }
     }
 
-    // MARK: - Safe bindings
+
 
     private func safeText(index: Int) -> Binding<String> {
         Binding(
@@ -304,7 +304,7 @@ struct WorkoutEditSheet: View {
         }
     }
 
-    // MARK: - Save
+
 
     private func save() {
         errorMessage = nil

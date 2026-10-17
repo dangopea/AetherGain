@@ -1,9 +1,9 @@
-//
-//  ProgressView.swift
-//  AetherGain
-//
-//  Weekly trends + 12-week activity heatmap + export.
-//
+
+
+
+
+
+
 
 import SwiftUI
 import Charts
@@ -67,7 +67,7 @@ struct AGProgressScreen: View {
         .onAppear { authVM.userDidInteract() }
     }
 
-    // MARK: - Cards
+
 
     private var summaryCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -227,8 +227,8 @@ struct AGProgressScreen: View {
                 let csv = ProgressAnalytics.csv(from: stats)
                 if let url = ProgressAnalytics.writeCSVToTemp(csv),
                    FileManager.default.fileExists(atPath: url.path) {
-                    // Set URL first, wait a run loop tick so SwiftUI wires it up
-                    // to the sheet, then present. Prevents "no items to share".
+
+
                     shareURL = url
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                         showShare = true
@@ -247,7 +247,7 @@ struct AGProgressScreen: View {
     }
 }
 
-// MARK: - Heatmap grid
+
 
 private struct HeatmapGrid: View {
     let cells: [ProgressAnalytics.HeatmapCell]
@@ -260,7 +260,7 @@ private struct HeatmapGrid: View {
             let w = (geo.size.width - CGFloat(columns - 1) * spacing) / CGFloat(columns)
             let h = (geo.size.height - CGFloat(rows - 1) * spacing) / CGFloat(rows)
 
-            // Grid is arranged column-major: first 7 cells = first column etc.
+
             HStack(spacing: spacing) {
                 ForEach(0..<columns, id: \.self) { c in
                     VStack(spacing: spacing) {
@@ -286,7 +286,7 @@ private struct HeatmapGrid: View {
     }
 }
 
-// MARK: - Share sheet
+
 
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]

@@ -1,7 +1,7 @@
-//
-//  HomeView.swift
-//  AetherGain — Blade Runner HUD dashboard.
-//
+
+
+
+
 
 import SwiftUI
 
@@ -12,7 +12,7 @@ struct HomeView: View {
     @StateObject private var mealVM    = MealViewModel()
     @StateObject private var workoutVM = WorkoutViewModel()
 
-    // Derived
+
     private var xp: Int { profileVM.profile.xp }
     private var level: Int { GameEngine.level(for: xp) }
     private var xpForLevel: Int { max(1, level * 500 - (level - 1) * 500) }
@@ -79,7 +79,7 @@ struct HomeView: View {
         .onAppear { authVM.userDidInteract() }
     }
 
-    // MARK: - HUD greeting
+
 
     private var hudHeader: some View {
         HStack(alignment: .top) {
@@ -94,7 +94,7 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Targets HUD
+
 
     private var targetsHUD: some View {
         let remaining = calorieTarget - todaysCalories
@@ -133,7 +133,7 @@ struct HomeView: View {
         Text(s).font(AGFont.mono(14)).foregroundColor(AGColor.inkMuted)
     }
 
-    // MARK: - Level card
+
 
     private var heroLevelCard: some View {
         HStack(spacing: 14) {
@@ -151,7 +151,7 @@ struct HomeView: View {
         .agCard()
     }
 
-    // MARK: - Quick tiles
+
 
     private var quickTiles: some View {
         HStack(spacing: 10) {
@@ -178,7 +178,7 @@ struct HomeView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(tint.opacity(0.35), lineWidth: 1))
     }
 
-    // MARK: - Today's meals preview
+
 
     private var mealsPreviewCard: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -217,7 +217,7 @@ struct HomeView: View {
         .agCard()
     }
 
-    // MARK: - Last workout
+
 
     private var lastWorkoutCard: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -252,7 +252,7 @@ struct HomeView: View {
         .agCard()
     }
 
-    // MARK: - Habits mini
+
 
     private var habitsMiniCard: some View {
         VStack(alignment: .leading, spacing: 10) {

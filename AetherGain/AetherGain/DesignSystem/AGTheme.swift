@@ -1,46 +1,46 @@
-//
-//  AGTheme.swift
-//  AetherGain
-//
-//  Gamified Blade Runner 2049 visual language:
-//  amber-orange primary, holographic teal secondary, near-black canvas,
-//  monospaced numerals with cinematic HUD framing.
-//
+
+
+
+
+
+
+
+
 
 import SwiftUI
 
-// MARK: - Palette
+
 
 enum AGColor {
-    // Backgrounds
-    static let canvas   = Color(red: 0.037, green: 0.043, blue: 0.055)  // near-black w/ blue tint
-    static let panel    = Color(red: 0.070, green: 0.078, blue: 0.098)  // card surface
-    static let panelHi  = Color(red: 0.100, green: 0.113, blue: 0.140)  // raised card
+
+    static let canvas   = Color(red: 0.037, green: 0.043, blue: 0.055)
+    static let panel    = Color(red: 0.070, green: 0.078, blue: 0.098)
+    static let panelHi  = Color(red: 0.100, green: 0.113, blue: 0.140)
     static let stroke   = Color.white.opacity(0.08)
     static let strokeHi = Color(red: 1.00, green: 0.55, blue: 0.18).opacity(0.35)
 
-    // Ink
-    static let ink       = Color(red: 0.965, green: 0.933, blue: 0.858) // parchment
+
+    static let ink       = Color(red: 0.965, green: 0.933, blue: 0.858)
     static let inkMuted  = Color(red: 0.60, green: 0.60, blue: 0.66)
     static let inkDim    = Color(red: 0.40, green: 0.40, blue: 0.46)
 
-    // Primary neon
-    static let amber      = Color(red: 1.00, green: 0.55, blue: 0.18)   // K's 2049 orange
+
+    static let amber      = Color(red: 1.00, green: 0.55, blue: 0.18)
     static let amberHi    = Color(red: 1.00, green: 0.72, blue: 0.42)
     static let amberLo    = Color(red: 0.55, green: 0.28, blue: 0.06)
 
-    // Secondary neons
-    static let teal       = Color(red: 0.24, green: 0.86, blue: 0.82)   // holographic
+
+    static let teal       = Color(red: 0.24, green: 0.86, blue: 0.82)
     static let magenta    = Color(red: 0.94, green: 0.36, blue: 0.85)
     static let sky        = Color(red: 0.42, green: 0.72, blue: 1.00)
     static let sage       = Color(red: 0.62, green: 0.88, blue: 0.66)
 
-    // Semantic
+
     static let success = teal
     static let warn    = Color(red: 1.00, green: 0.82, blue: 0.35)
     static let danger  = Color(red: 1.00, green: 0.32, blue: 0.32)
 
-    // Legacy aliases (keep existing views compiling until fully migrated)
+
     static let coral      = amber
     static let peach      = amberHi
     static let mint       = teal
@@ -50,7 +50,7 @@ enum AGColor {
     static let card       = panel
 }
 
-// MARK: - Typography
+
 
 enum AGFont {
     static func display(_ size: CGFloat = 34) -> Font {
@@ -71,17 +71,17 @@ enum AGFont {
     static func mono(_ size: CGFloat = 14, weight: Font.Weight = .medium) -> Font {
         .system(size: size, weight: weight, design: .monospaced)
     }
-    /// Big HUD-style numerals.
+
     static func number(_ size: CGFloat = 28) -> Font {
         .system(size: size, weight: .heavy, design: .monospaced)
     }
-    /// Uppercase HUD label.
+
     static func hud(_ size: CGFloat = 10) -> Font {
         .system(size: size, weight: .semibold, design: .monospaced)
     }
 }
 
-// MARK: - Card / HUD panel modifier
+
 
 struct AGCardStyle: ViewModifier {
     var background: Color = AGColor.panel
@@ -101,7 +101,7 @@ struct AGCardStyle: ViewModifier {
                     .stroke(AGColor.stroke, lineWidth: 1)
             )
             .overlay(
-                // Corner bracket accents on the top-left, HUD-style.
+
                 CornerBrackets()
                     .stroke(AGColor.amber.opacity(0.35), lineWidth: 1)
                     .allowsHitTesting(false)
@@ -115,19 +115,19 @@ private struct CornerBrackets: Shape {
         var p = Path()
         let len: CGFloat = 12
         let inset: CGFloat = 4
-        // top-left
+
         p.move(to: CGPoint(x: rect.minX + inset, y: rect.minY + inset + len))
         p.addLine(to: CGPoint(x: rect.minX + inset, y: rect.minY + inset))
         p.addLine(to: CGPoint(x: rect.minX + inset + len, y: rect.minY + inset))
-        // top-right
+
         p.move(to: CGPoint(x: rect.maxX - inset - len, y: rect.minY + inset))
         p.addLine(to: CGPoint(x: rect.maxX - inset, y: rect.minY + inset))
         p.addLine(to: CGPoint(x: rect.maxX - inset, y: rect.minY + inset + len))
-        // bottom-right
+
         p.move(to: CGPoint(x: rect.maxX - inset, y: rect.maxY - inset - len))
         p.addLine(to: CGPoint(x: rect.maxX - inset, y: rect.maxY - inset))
         p.addLine(to: CGPoint(x: rect.maxX - inset - len, y: rect.maxY - inset))
-        // bottom-left
+
         p.move(to: CGPoint(x: rect.minX + inset + len, y: rect.maxY - inset))
         p.addLine(to: CGPoint(x: rect.minX + inset, y: rect.maxY - inset))
         p.addLine(to: CGPoint(x: rect.minX + inset, y: rect.maxY - inset - len))
@@ -142,7 +142,7 @@ extension View {
     }
 }
 
-// MARK: - Push button (HUD style with amber glow)
+
 
 struct AGPushButton: View {
     let title: String
@@ -228,7 +228,7 @@ struct AGGhostButton: View {
     }
 }
 
-// MARK: - Section header
+
 
 struct AGSectionHeader: View {
     let title: String
@@ -257,7 +257,7 @@ struct AGSectionHeader: View {
     }
 }
 
-// MARK: - Stat pill
+
 
 struct AGStatPill: View {
     let icon: String
@@ -286,7 +286,7 @@ struct AGStatPill: View {
     }
 }
 
-// MARK: - Haptics
+
 
 enum AGHaptics {
     static func tap() {
@@ -303,7 +303,7 @@ enum AGHaptics {
     }
 }
 
-// MARK: - Progress ring (fixed sublabel overflow)
+
 
 struct AGProgressRing: View {
     var progress: Double
@@ -347,7 +347,7 @@ struct AGProgressRing: View {
     }
 }
 
-// MARK: - Streak badge
+
 
 struct AGStreakBadge: View {
     let days: Int
@@ -369,7 +369,7 @@ struct AGStreakBadge: View {
     }
 }
 
-// MARK: - Screen background with subtle grid
+
 
 struct AGScreen<Content: View>: View {
     let content: () -> Content
@@ -383,7 +383,7 @@ struct AGScreen<Content: View>: View {
     }
 }
 
-/// Faint dot-grid backdrop for the Blade Runner HUD feel.
+
 struct AGGrid: View {
     var spacing: CGFloat = 24
     var body: some View {
@@ -405,7 +405,7 @@ struct AGGrid: View {
     }
 }
 
-// MARK: - Avatar
+
 
 struct AGAvatar: View {
     let urlString: String?
@@ -441,7 +441,7 @@ struct AGAvatar: View {
     }
 }
 
-// MARK: - HUD chip
+
 
 struct AGHudChip: View {
     let text: String
